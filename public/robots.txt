@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sushi-time-frontend.vercel.app/sitemap.xml

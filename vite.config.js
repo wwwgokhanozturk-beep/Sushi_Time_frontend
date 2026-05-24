@@ -11,11 +11,11 @@ export default defineConfig({
     port: 3001,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://sushitime-backend-production.up.railway.app',
         changeOrigin: true,
       },
       '/socket.io': {
-        target: 'http://localhost:5000',
+        target: 'https://sushitime-backend-production.up.railway.app',
         changeOrigin: true,
         ws: true,
       },

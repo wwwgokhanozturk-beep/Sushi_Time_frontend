@@ -1,4 +1,16 @@
+# Robots.txt — Sushi Time TR
+# https://sushitimetr.com
+
 User-agent: *
 Allow: /
 
-Sitemap: https://sushi-time-frontend.vercel.app/sitemap.xml
+Disallow: /orders
+Disallow: /profile
+Disallow: /cart
+Disallow: /checkout
+Disallow: /login
+Disallow: /register
+
+
+# Sitemap
+Sitemap: https://sushitimetr.com/sitemap.xml

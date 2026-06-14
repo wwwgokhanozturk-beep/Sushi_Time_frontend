@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMenuStore } from '../store/menuStore';
 import PromoCarousel from '../components/PromoCarousel';
+import BannerCarousel from '../components/BannerCarousel';
 import SushiCard from '../components/SushiCard';
 import useIsMobile from '../hooks/useIsMobile';
 
@@ -36,7 +37,7 @@ const SCROLL_OFFSET = NAVBAR_PX + CHIPBAR_PX + 12;
 export default function HomePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { items, loading, loadMenu } = useMenuStore();
+  const { items, loading, loadMenu, categoryOrder } = useMenuStore();
   const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [activeCat, setActiveCat] = useState(null);
@@ -62,10 +63,21 @@ export default function HomePage() {
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(it);
     }
-    return [...map.entries()].sort(
-      ([a], [b]) => categoryPriority(a) - categoryPriority(b),
-    );
-  }, [items, search]);
+
+    // Primary sort: admin-defined category order. Categories not in that
+    // list fall back to the built-in priority and sit after ordered ones.
+    const orderIndex = (cat) => {
+      const i = categoryOrder.indexOf(cat);
+      return i === -1 ? Infinity : i;
+    };
+
+    return [...map.entries()].sort(([a], [b]) => {
+      const oa = orderIndex(a);
+      const ob = orderIndex(b);
+      if (oa !== ob) return oa - ob;
+      return categoryPriority(a) - categoryPriority(b);
+    });
+  }, [items, search, categoryOrder]);
 
   useEffect(() => {
     if (!activeCat && grouped.length) setActiveCat(grouped[0][0]);
@@ -120,14 +132,8 @@ export default function HomePage() {
     <div className="page-enter" style={styles.page}>
       {/* Top section: hero / promo / info / search */}
       <div style={styles.container}>
-        {/* Hero */}
-        <div style={styles.hero}>
-          <div style={styles.heroText}>
-            <div style={styles.heroTitle}>{t('fresh_sushi')}</div>
-            <div style={styles.heroSub}>{t('delivered_in_30')}</div>
-          </div>
-          <div style={styles.heroEmoji}>🍣</div>
-        </div>
+        {/* Hero banner carousel */}
+        <BannerCarousel />
 
         <PromoCarousel />
 
@@ -215,7 +221,7 @@ export default function HomePage() {
 
 const styles = {
   page: { flex: 1, paddingBottom: 80 },
-  container: { maxWidth: 1200, margin: '0 auto', padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: 24, width: '100%' },
+  container: { maxWidth: '100%', margin: '0 auto', padding: '20px clamp(16px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: 24, width: '100%' },
   hero: {
     background: 'linear-gradient(135deg, var(--primary) 0%, #ff6b35 100%)',
     borderRadius: 'var(--radius-xl)',
@@ -262,7 +268,7 @@ const styles = {
     WebkitBackdropFilter: 'saturate(180%) blur(12px)',
     borderBottom: '1px solid var(--divider)',
   },
-  stickyInner: { maxWidth: 1200, margin: '0 auto', padding: '12px 20px' },
+  stickyInner: { maxWidth: '100%', margin: '0 auto', padding: '12px clamp(16px, 3vw, 40px)' },
   catScroll: { display: 'flex', gap: 8, overflowX: 'auto', scrollBehavior: 'smooth' },
   catBtn: {
     flexShrink: 0,

@@ -208,7 +208,7 @@ export default function MenuPage() {
 
 const styles = {
   page: { flex: 1, paddingBottom: 80 },
-  container: { maxWidth: 1200, margin: '0 auto', padding: '20px 20px', display: 'flex', flexDirection: 'column', gap: 20, width: '100%' },
+  container: { maxWidth: '100%', margin: '0 auto', padding: '20px clamp(16px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: 20, width: '100%' },
   title: { fontSize: 28, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: -0.5 },
   searchWrap: {
     background: '#fff',
@@ -233,7 +233,7 @@ const styles = {
     WebkitBackdropFilter: 'saturate(180%) blur(12px)',
     borderBottom: '1px solid var(--divider)',
   },
-  stickyInner: { maxWidth: 1200, margin: '0 auto', padding: '12px 20px' },
+  stickyInner: { maxWidth: '100%', margin: '0 auto', padding: '12px clamp(16px, 3vw, 40px)' },
   catScroll: { display: 'flex', gap: 8, overflowX: 'auto', scrollBehavior: 'smooth' },
   catBtn: {
     flexShrink: 0,

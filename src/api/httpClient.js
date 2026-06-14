@@ -22,7 +22,7 @@ httpClient.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      const raw = localStorage.getItem('sushi_time_profile');
+        const raw = localStorage.getItem('sushi_time_profile');
       if (raw) {
         try {
           const data = JSON.parse(raw);

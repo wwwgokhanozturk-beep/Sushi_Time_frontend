@@ -135,9 +135,9 @@ const styles = {
     height: "var(--navbar-height)",
   },
   inner: {
-    maxWidth: 1200,
+    maxWidth: "100%",
     margin: "0 auto",
-    padding: "0 24px",
+    padding: "0 clamp(16px, 3vw, 40px)",
     height: "100%",
     display: "flex",
     alignItems: "center",

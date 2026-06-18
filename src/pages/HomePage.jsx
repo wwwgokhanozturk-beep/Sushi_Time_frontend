@@ -5,6 +5,7 @@ import { useMenuStore } from '../store/menuStore';
 import PromoCarousel from '../components/PromoCarousel';
 import BannerCarousel from '../components/BannerCarousel';
 import SushiCard from '../components/SushiCard';
+import ContactButton from '../components/ContactButton';
 import useIsMobile from '../hooks/useIsMobile';
 
 const CATEGORY_KEYS = {
@@ -136,6 +137,8 @@ export default function HomePage() {
         <BannerCarousel />
 
         <PromoCarousel />
+
+        <ContactButton variant="card" />
 
         <div style={styles.infoBar}>
           <div style={styles.infoItem}>🚚 <span>{t('free_delivery')}</span></div>

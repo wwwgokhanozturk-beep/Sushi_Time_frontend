@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useChatStore } from '../store/chatStore';
 import { useProfileStore } from '../store/profileStore';
 import { requestNotificationPermission, unlockAudio } from '../utils/notify';
+import ContactButton from './ContactButton';
 
 function useIsMobile(breakpoint = 600) {
   const [isMobile, setIsMobile] = useState(
@@ -73,13 +74,14 @@ export default function ChatWidget() {
       <button
         style={{
           ...styles.fab,
+          ...(isMobile ? {} : styles.fabDesktop),
           ...(isOpen ? styles.fabActive : {}),
         }}
         onClick={isOpen ? closeChat : handleOpen}
         aria-label={t('chat_support')}
         title={t('chat_support')}
       >
-        <span style={{ fontSize: 30 }}>{preparing ? '⏳' : isOpen ? '✕' : '💬'}</span>
+        <span style={{ fontSize: isMobile ? 30 : 38 }}>{preparing ? '⏳' : isOpen ? '✕' : '💬'}</span>
         {!isOpen && unread > 0 && (
           <span style={styles.fabBadge}>{unread > 9 ? '9+' : unread}</span>
         )}
@@ -105,6 +107,8 @@ export default function ChatWidget() {
             </div>
             <button style={styles.closeBtn} onClick={closeChat} aria-label="close">✕</button>
           </div>
+
+          <ContactButton variant="compact" />
 
           <div ref={listRef} style={styles.messages}>
             {loading && messages.length === 0 ? (
@@ -196,6 +200,12 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'transform 0.15s, background 0.15s',
+  },
+  // На ПК кнопка чата крупнее и заметнее
+  fabDesktop: {
+    width: 80,
+    height: 80,
+    boxShadow: '0 10px 30px rgba(232,24,27,0.45)',
   },
   fabActive: { background: '#374151' },
   fabBadge: {

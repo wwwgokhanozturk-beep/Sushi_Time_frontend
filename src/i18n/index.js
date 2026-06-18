@@ -50,6 +50,7 @@ const en = {
   delivery_location: 'Delivery location on map', use_my_location: 'My location', locating: 'Locating...',
   tap_map_to_pick: 'Tap the map to mark your delivery point',
   location_denied: 'Location access denied', location_unavailable: 'Geolocation not supported', map_load_error: 'Map failed to load',
+  contact_us: 'Contact us',
 };
 
 const ru = {
@@ -100,6 +101,7 @@ const ru = {
   delivery_location: 'Точка доставки на карте', use_my_location: 'Моё местоположение', locating: 'Определяем...',
   tap_map_to_pick: 'Нажмите на карту, чтобы отметить точку доставки',
   location_denied: 'Доступ к геолокации запрещён', location_unavailable: 'Геолокация не поддерживается', map_load_error: 'Не удалось загрузить карту',
+  contact_us: 'Связаться с нами',
 };
 
 const tr = {
@@ -150,6 +152,7 @@ const tr = {
   delivery_location: 'Haritada teslimat noktası', use_my_location: 'Konumum', locating: 'Konum bulunuyor...',
   tap_map_to_pick: 'Teslimat noktasını işaretlemek için haritaya dokunun',
   location_denied: 'Konum erişimi reddedildi', location_unavailable: 'Konum desteklenmiyor', map_load_error: 'Harita yüklenemedi',
+  contact_us: 'Bize ulaşın',
 };
 
 const savedLang = localStorage.getItem('sushi_lang') || 'en';

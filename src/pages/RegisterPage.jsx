@@ -82,7 +82,7 @@ const styles = {
   page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 80 },
   card: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '36px 32px', maxWidth: 440, width: '100%', display: 'flex', flexDirection: 'column', gap: 20, boxShadow: 'var(--shadow-lg)' },
   logoRow: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  logoImg: { height: 100, width: 'auto', objectFit: 'contain' },
+  logoImg: { height: 250, width: 'auto', maxWidth: '100%', objectFit: 'contain' },
   title: { fontSize: 22, fontWeight: 800, textAlign: 'center' },
   form: { display: 'flex', flexDirection: 'column', gap: 14 },
   error: { background: '#FFF1F2', color: 'var(--error)', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 600 },

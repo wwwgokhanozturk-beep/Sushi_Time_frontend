@@ -229,9 +229,9 @@ function SummaryRow({ label, value, bold, valueColor }) {
 }
 
 const fStyles = {
-  wrap: { display: 'flex', flexDirection: 'column', gap: 4 },
+  wrap: { display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 },
   label: { fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 },
-  input: { padding: '10px 14px', border: '1.5px solid var(--divider)', borderRadius: 'var(--radius-md)', fontSize: 15, outline: 'none', background: '#fff', color: 'var(--text-primary)' },
+  input: { width: '100%', minWidth: 0, maxWidth: '100%', padding: '10px 14px', border: '1.5px solid var(--divider)', borderRadius: 'var(--radius-md)', fontSize: 15, outline: 'none', background: '#fff', color: 'var(--text-primary)' },
   inputError: { borderColor: 'var(--error)' },
   error: { fontSize: 12, color: 'var(--error)' },
 };
@@ -242,11 +242,11 @@ const styles = {
   backBtn: { alignSelf: 'flex-start', fontSize: 14, fontWeight: 600, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 },
   title: { fontSize: 28, fontWeight: 900, color: 'var(--text-primary)' },
   layout: { display: 'grid', gridTemplateColumns: '1fr 360px', gap: 24, alignItems: 'start' },
-  layoutMobile: { gridTemplateColumns: '1fr' },
-  left: { display: 'flex', flexDirection: 'column', gap: 16 },
-  section: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 12, boxShadow: 'var(--shadow-sm)' },
+  layoutMobile: { gridTemplateColumns: 'minmax(0, 1fr)' },
+  left: { display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 },
+  section: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '20px', display: 'flex', flexDirection: 'column', gap: 12, boxShadow: 'var(--shadow-sm)', minWidth: 0 },
   sectionTitle: { fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' },
-  row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
+  row: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 },
   payOption: {
     display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
     borderRadius: 'var(--radius-md)', border: '1.5px solid var(--divider)',
@@ -258,12 +258,12 @@ const styles = {
   tipRow: { display: 'flex', gap: 8, flexWrap: 'wrap' },
   tipBtn: { padding: '8px 16px', borderRadius: 'var(--radius-full)', border: '1.5px solid var(--divider)', background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' },
   tipBtnActive: { background: 'var(--primary)', color: '#fff', border: '1.5px solid var(--primary)' },
-  summary: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 80 },
+  summary: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column', gap: 16, position: 'sticky', top: 80, minWidth: 0 },
   summaryTitle: { fontSize: 18, fontWeight: 800 },
   orderItems: { display: 'flex', flexDirection: 'column', gap: 8 },
   orderItem: { display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--text-secondary)' },
   promoRow: { display: 'flex', gap: 8 },
-  promoInput: { flex: 1, padding: '8px 12px', border: '1.5px solid var(--divider)', borderRadius: 'var(--radius-md)', fontSize: 13, outline: 'none' },
+  promoInput: { flex: 1, minWidth: 0, width: '100%', padding: '8px 12px', border: '1.5px solid var(--divider)', borderRadius: 'var(--radius-md)', fontSize: 13, outline: 'none' },
   applyBtn: { padding: '8px 16px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer' },
   summaryRows: { display: 'flex', flexDirection: 'column', gap: 8 },
   divider: { height: 1, background: 'var(--divider)' },

@@ -37,9 +37,9 @@ function buildRestaurantEl(label) {
   el.style.cssText = 'cursor:default;transform:translateY(-2px);text-align:center;';
   el.innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;">
-      <div style="background:#fff;padding:4px 10px;border-radius:10px;white-space:nowrap;
+      <div style="background:#fff;padding:3px;border-radius:8px;white-space:nowrap;
         box-shadow:0 2px 6px rgba(0,0,0,.25);margin-bottom:3px;display:flex;align-items:center;">
-        <img src="/image.png" alt="${label}" style="height:20px;width:auto;display:block;" />
+        <img src="/image.png" alt="${label}" style="height:40px;width:auto;display:block;" />
       </div>
       <div style="width:30px;height:30px;background:${Colors.primary};border:3px solid #fff;border-radius:50% 50% 50% 0;
         transform:rotate(45deg);box-shadow:0 3px 8px rgba(0,0,0,.35);"></div>

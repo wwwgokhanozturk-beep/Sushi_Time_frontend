@@ -200,9 +200,9 @@ export default function HomePage() {
               style={styles.section}
             >
               <h2 style={styles.sectionTitle}>{t(CATEGORY_KEYS[cat] || cat)}</h2>
-              <div style={gridStyle}>
+              <div style={isMobile ? styles.listContainer : styles.grid}>
                 {list.map((item) => (
-                  <SushiCard key={item._id} item={item} />
+                  <SushiCard key={item._id} item={item} layout={isMobile ? 'list' : 'grid'} />
                 ))}
               </div>
             </section>
@@ -288,6 +288,7 @@ const styles = {
   sectionTitle: { fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: -0.3 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20 },
   gridMobile: { gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 },
+  listContainer: { display: 'flex', flexDirection: 'column', background: '#fff', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' },
   empty: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '48px 0' },
   emptyText: { fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' },
   emptySubtext: { fontSize: 14, color: 'var(--text-secondary)' },

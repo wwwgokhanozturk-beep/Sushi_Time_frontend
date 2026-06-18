@@ -108,7 +108,11 @@ export default function CheckoutPage() {
               <Field label={t('delivery_address')} value={form.address} onChange={set('address')} error={errors.address} />
               <div style={fStyles.wrap}>
                 <label style={fStyles.label}>{t('delivery_location')}</label>
-                <MapboxMap value={geo} onChange={(lat, lng) => setGeo({ lat, lng })} />
+                <MapboxMap
+                  value={geo}
+                  onChange={(lat, lng) => setGeo({ lat, lng })}
+                  onAddress={(addr) => setForm((f) => ({ ...f, address: addr }))}
+                />
               </div>
               <div style={styles.row}>
                 <Field label={t('building_name')} value={form.buildingName} onChange={set('buildingName')} />

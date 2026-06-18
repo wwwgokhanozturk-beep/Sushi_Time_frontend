@@ -88,15 +88,37 @@ function buildUserEl() {
  *   onChange  — (lat, lng) => void
  *   height    — высота карты (px), default 280
  */
-export default function MapboxMap({ value, onChange, height = 280 }) {
-  const { t } = useTranslation();
+export default function MapboxMap({ value, onChange, onAddress, height = 280 }) {
+  const { t, i18n } = useTranslation();
   const containerRef = useRef(null);
+  const wrapperRef = useRef(null);
   const mapRef = useRef(null);
   const deliveryMarkerRef = useRef(null);
   const userMarkerRef = useRef(null);
+  const geoSeq = useRef(0);
   const [ready, setReady] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [address, setAddress] = useState('');
   const [error, setError] = useState('');
+
+  // Обратное геокодирование: координаты -> человекочитаемый адрес
+  const reverseGeocode = useCallback(async (lng, lat) => {
+    const seq = ++geoSeq.current;
+    setAddress('…');
+    try {
+      const lang = (i18n.language || 'en').slice(0, 2);
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json` +
+        `?access_token=${MAPBOX_TOKEN}&language=${lang}&limit=1`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (seq !== geoSeq.current) return; // устарел — пришёл более новый выбор
+      const name = data?.features?.[0]?.place_name || '';
+      setAddress(name);
+      if (name) onAddress?.(name);
+    } catch {
+      if (seq === geoSeq.current) setAddress('');
+    }
+  }, [i18n.language, onAddress]);
 
   const placeDelivery = useCallback((lng, lat) => {
     const mapboxgl = window.mapboxgl;
@@ -111,15 +133,26 @@ export default function MapboxMap({ value, onChange, height = 280 }) {
       marker.on('dragend', () => {
         const ll = marker.getLngLat();
         onChange?.(ll.lat, ll.lng);
+        reverseGeocode(ll.lng, ll.lat);
       });
       deliveryMarkerRef.current = marker;
     }
     onChange?.(lat, lng);
-  }, [onChange]);
+    reverseGeocode(lng, lat);
+  }, [onChange, reverseGeocode]);
 
   // Инициализация карты
   useEffect(() => {
     let cancelled = false;
+    // В полноэкранном режиме обёртка должна занимать весь экран (перебиваем inline height/radius)
+    if (!document.getElementById('stx-map-fs-style')) {
+      const s = document.createElement('style');
+      s.id = 'stx-map-fs-style';
+      s.textContent =
+        '.stx-map-wrapper:fullscreen,.stx-map-wrapper:-webkit-full-screen' +
+        '{height:100%!important;width:100%!important;border-radius:0!important;}';
+      document.head.appendChild(s);
+    }
     loadMapboxGL()
       .then((mapboxgl) => {
         if (cancelled || !containerRef.current || mapRef.current) return;
@@ -132,6 +165,8 @@ export default function MapboxMap({ value, onChange, height = 280 }) {
           attributionControl: false,
         });
         map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
+        // Кнопка «на весь экран» — разворачивает обёртку (вместе с кнопкой геолокации)
+        map.addControl(new mapboxgl.FullscreenControl({ container: wrapperRef.current }), 'top-left');
         map.on('load', () => {
           // Маркер ресторана
           new mapboxgl.Marker({ element: buildRestaurantEl(t('app_title')), anchor: 'bottom' })
@@ -189,7 +224,7 @@ export default function MapboxMap({ value, onChange, height = 280 }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ position: 'relative', height, borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1.5px solid var(--divider)', boxShadow: 'var(--shadow-sm)' }}>
+      <div ref={wrapperRef} className="stx-map-wrapper" style={{ position: 'relative', height, borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1.5px solid var(--divider)', boxShadow: 'var(--shadow-sm)' }}>
         <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
         <button
           type="button"
@@ -207,8 +242,15 @@ export default function MapboxMap({ value, onChange, height = 280 }) {
           <span>{locating ? t('locating') : t('use_my_location')}</span>
         </button>
       </div>
-      <div style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-        <span>{value?.lat != null ? `📌 ${value.lat.toFixed(5)}, ${value.lng.toFixed(5)}` : t('tap_map_to_pick')}</span>
+      <div style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {value?.lat != null ? (
+          <>
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>📍 {address || t('locating')}</span>
+            <span style={{ fontSize: 12 }}>{value.lat.toFixed(5)}, {value.lng.toFixed(5)}</span>
+          </>
+        ) : (
+          <span>{t('tap_map_to_pick')}</span>
+        )}
         {error && <span style={{ color: 'var(--error)', fontWeight: 600 }}>{error}</span>}
       </div>
     </div>

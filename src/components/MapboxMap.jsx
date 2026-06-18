@@ -98,6 +98,7 @@ export default function MapboxMap({ value, onChange, onAddress, height = 280 }) 
   const geoSeq = useRef(0);
   const [ready, setReady] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [located, setLocated] = useState(false);
   const [address, setAddress] = useState('');
   const [error, setError] = useState('');
 
@@ -216,6 +217,7 @@ export default function MapboxMap({ value, onChange, onAddress, height = 280 }) 
         }
         map.flyTo({ center: [longitude, latitude], zoom: 16, essential: true });
         placeDelivery(longitude, latitude);
+        setLocated(true); // местоположение получено — кнопку убираем
       },
       () => { setLocating(false); setError(t('location_denied')); },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -226,21 +228,24 @@ export default function MapboxMap({ value, onChange, onAddress, height = 280 }) 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div ref={wrapperRef} className="stx-map-wrapper" style={{ position: 'relative', height, borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1.5px solid var(--divider)', boxShadow: 'var(--shadow-sm)' }}>
         <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
-        <button
-          type="button"
-          onClick={handleLocate}
-          disabled={locating}
-          style={{
-            position: 'absolute', top: 12, right: 12, zIndex: 2,
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '8px 14px', background: '#fff', color: 'var(--primary)',
-            border: 'none', borderRadius: 'var(--radius-full)', fontSize: 13, fontWeight: 700,
-            cursor: locating ? 'default' : 'pointer', boxShadow: 'var(--shadow-md)',
-          }}
-        >
-          <span>📍</span>
-          <span>{locating ? t('locating') : t('use_my_location')}</span>
-        </button>
+        {!located && (
+          <button
+            type="button"
+            onClick={handleLocate}
+            disabled={locating}
+            style={{
+              position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 2,
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '14px 26px', background: 'var(--primary)', color: '#fff',
+              border: 'none', borderRadius: 'var(--radius-full)', fontSize: 16, fontWeight: 800,
+              cursor: locating ? 'default' : 'pointer', boxShadow: '0 6px 18px rgba(232,24,27,.45)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span style={{ fontSize: 20 }}>📍</span>
+            <span>{locating ? t('locating') : t('use_my_location')}</span>
+          </button>
+        )}
       </div>
       <div style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {value?.lat != null ? (

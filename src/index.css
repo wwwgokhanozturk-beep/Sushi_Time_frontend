@@ -44,12 +44,20 @@ html, body {
   text-size-adjust: 100%;
   /* Avoid grey flash on tap for a native app feel */
   -webkit-tap-highlight-color: transparent;
+  /* Никогда не выходим за ширину экрана — страница всегда влезает в любой телефон.
+     overflow-x: clip (не hidden) не создаёт скролл-контейнер и не ломает position: sticky. */
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 a {

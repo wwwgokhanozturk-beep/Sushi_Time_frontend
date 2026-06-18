@@ -18,6 +18,13 @@ export const Spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 };
 
 export const Radius = { sm: 8, md: 12, lg: 20, xl: 28, full: 999 };
 
+// Mapbox + restaurant location (Mahmutlar, Kumru Sk. No:7/D, 07400 Alanya/Antalya)
+// Токен берётся из env (VITE_MAPBOX_TOKEN) — в Vercel и локальном .env.
+export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+export const RESTAURANT_LAT = 36.490792;
+export const RESTAURANT_LNG = 32.096686;
+export const RESTAURANT_ADDRESS = 'Mahmutlar, Kumru Sk. No:7/D, 07400 Alanya/Antalya';
+
 export const FREE_DELIVERY_THRESHOLD = 25;
 export const DELIVERY_FEE = 2.99;
 export const SERVICE_FEE = 0.99;

@@ -7,6 +7,7 @@ import { useProfileStore } from '../store/profileStore';
 import httpClient from '../api/httpClient';
 import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, SERVICE_FEE, TIP_OPTIONS } from '../theme';
 import useIsMobile from '../hooks/useIsMobile';
+import MapboxMap from '../components/MapboxMap';
 
 export default function CheckoutPage() {
   const { t } = useTranslation();
@@ -28,6 +29,7 @@ export default function CheckoutPage() {
     notes: '',
   });
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [geo, setGeo] = useState(null); // { lat, lng } выбранная точка доставки
   const [tip, setTip] = useState(0);
   const [promoCode, setPromoCode] = useState('');
   const [promoDiscount, setPromoDiscount] = useState(0);
@@ -75,6 +77,7 @@ export default function CheckoutPage() {
       paymentMethod,
       tip,
       promoCode: promoCode.toUpperCase(),
+      ...(geo ? { latitude: geo.lat, longitude: geo.lng } : {}),
       ...(profile.userId ? { user: profile.userId } : {}),
     };
     const order = await placeOrder(payload);
@@ -103,6 +106,10 @@ export default function CheckoutPage() {
               <Field label={t('full_name')} value={form.customerName} onChange={set('customerName')} error={errors.customerName} />
               <Field label={t('phone_number')} value={form.phone} onChange={set('phone')} error={errors.phone} type="tel" placeholder="+90 555 000 0000" />
               <Field label={t('delivery_address')} value={form.address} onChange={set('address')} error={errors.address} />
+              <div style={fStyles.wrap}>
+                <label style={fStyles.label}>{t('delivery_location')}</label>
+                <MapboxMap value={geo} onChange={(lat, lng) => setGeo({ lat, lng })} />
+              </div>
               <div style={styles.row}>
                 <Field label={t('building_name')} value={form.buildingName} onChange={set('buildingName')} />
                 <Field label={t('floor')} value={form.floor} onChange={set('floor')} />

@@ -3,12 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
 
+// Кадрирование фото, заданное в админке (масштаб + смещение в % рамки)
+export function imageFrameStyle(item) {
+  const s = item?.imageScale ?? 1;
+  const x = item?.imageOffsetX ?? 0;
+  const y = item?.imageOffsetY ?? 0;
+  if (s === 1 && x === 0 && y === 0) return null;
+  return { transform: `translate(${x}%, ${y}%) scale(${s})`, transformOrigin: 'center' };
+}
+
 export default function SushiCard({ item, layout = 'grid' }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const addToCart = useCartStore((s) => s.addToCart);
 
   if (!item) return null;
+
+  const frame = imageFrameStyle(item);
 
   const handleAdd = (e) => {
     e.stopPropagation();
@@ -33,7 +44,7 @@ export default function SushiCard({ item, layout = 'grid' }) {
         {/* RIGHT — image + add button */}
         <div style={listStyles.imgWrap}>
           {item.imageUrl ? (
-            <img style={listStyles.img} src={item.imageUrl} alt={item.name} loading="lazy" />
+            <img style={{ ...listStyles.img, ...frame }} src={item.imageUrl} alt={item.name} loading="lazy" />
           ) : (
             <div style={{ ...listStyles.img, ...listStyles.imgPlaceholder }}>🍣</div>
           )}
@@ -62,6 +73,7 @@ export default function SushiCard({ item, layout = 'grid' }) {
             src={item.imageUrl}
             alt={item.name}
             loading="lazy"
+            style={frame || undefined}
           />
         ) : (
           <div

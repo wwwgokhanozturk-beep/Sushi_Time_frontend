@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
 import { useCartStore } from '../store/cartStore';
+import { imageFrameStyle } from '../components/SushiCard';
 import useIsMobile from '../hooks/useIsMobile';
 
 export default function ItemDetailPage() {
@@ -56,7 +57,7 @@ export default function ItemDetailPage() {
           {/* Image */}
           <div style={styles.imgWrap}>
             {item.imageUrl ? (
-              <img src={item.imageUrl} alt={item.name} style={styles.img} />
+              <img src={item.imageUrl} alt={item.name} style={{ ...styles.img, ...imageFrameStyle(item) }} />
             ) : (
               <div style={{ ...styles.img, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 80, background: 'var(--divider)' }}>
                 🍣

@@ -35,8 +35,7 @@ export default function LoginPage() {
     <div style={styles.page}>
       <div style={styles.card}>
         <div style={styles.logoRow}>
-          <span style={{ fontSize: 40 }}>🍣</span>
-          <div style={styles.logoText}>Sushi Time</div>
+          <img src="/image.png" alt="Sushi Time" style={styles.logoImg} />
         </div>
 
         <h1 style={styles.title}>{t('sign_in')}</h1>
@@ -73,8 +72,8 @@ export default function LoginPage() {
 const styles = {
   page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 80 },
   card: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '36px 32px', maxWidth: 420, width: '100%', display: 'flex', flexDirection: 'column', gap: 20, boxShadow: 'var(--shadow-lg)' },
-  logoRow: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 },
-  logoText: { fontSize: 24, fontWeight: 900, color: 'var(--primary)', letterSpacing: -0.5 },
+  logoRow: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  logoImg: { height: 100, width: 'auto', objectFit: 'contain' },
   title: { fontSize: 22, fontWeight: 800, textAlign: 'center' },
   form: { display: 'flex', flexDirection: 'column', gap: 14 },
   field: { display: 'flex', flexDirection: 'column', gap: 4 },

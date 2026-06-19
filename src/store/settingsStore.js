@@ -17,6 +17,26 @@ export const useSettingsStore = create((set, get) => ({
       set({ loaded: true });
     }
   },
+
+  // Слайдшоу фото в карточках меню
+  slideshowAutoplay: true,
+  slideshowInterval: 5, // секунды
+  slideshowLoaded: false,
+
+  loadSlideshow: async () => {
+    if (get().slideshowLoaded) return;
+    set({ slideshowLoaded: true }); // оптимистично — чтобы не дёргать много раз
+    try {
+      const res = await httpClient.get('/settings/slideshow');
+      const s = res.data?.data?.settings || {};
+      set({
+        slideshowAutoplay: s.autoplay !== false,
+        slideshowInterval: Number(s.intervalSec) > 0 ? Number(s.intervalSec) : 5,
+      });
+    } catch {
+      /* оставляем дефолты */
+    }
+  },
 }));
 
 // Ссылка для контакта: WhatsApp -> wa.me, телефон -> tel:

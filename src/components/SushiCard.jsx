@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
+import { useSettingsStore } from '../store/settingsStore';
 
 // Кадрирование фото, заданное в админке (масштаб + смещение в % рамки)
 export function imageFrameStyle(item) {
@@ -17,6 +18,21 @@ function getPhotos(item) {
   if (!item) return [];
   if (Array.isArray(item.images) && item.images.length) return item.images.filter(Boolean);
   return item.imageUrl ? [item.imageUrl] : [];
+}
+
+// Точки-индикаторы фото
+function Dots({ count, active }) {
+  return (
+    <div style={{ position: 'absolute', bottom: 6, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 5, zIndex: 3, pointerEvents: 'none' }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <span key={i} style={{
+          width: i === active ? 7 : 5, height: i === active ? 7 : 5, borderRadius: 999,
+          background: i === active ? '#fff' : 'rgba(255,255,255,0.6)',
+          boxShadow: '0 0 2px rgba(0,0,0,0.45)', transition: 'all .2s',
+        }} />
+      ))}
+    </div>
+  );
 }
 
 // Стек фото с плавным кросс-фейдом (активное — opacity 1)
@@ -47,20 +63,49 @@ export default function SushiCard({ item, layout = 'grid' }) {
   const navigate = useNavigate();
   const addToCart = useCartStore((s) => s.addToCart);
 
+  const slideshowAutoplay = useSettingsStore((s) => s.slideshowAutoplay);
+  const slideshowInterval = useSettingsStore((s) => s.slideshowInterval);
+  const loadSlideshow = useSettingsStore((s) => s.loadSlideshow);
+
   const photos = getPhotos(item);
   const [photoIdx, setPhotoIdx] = useState(0);
+  const touchX = useRef(null);
+  const movedRef = useRef(false);
+
+  useEffect(() => { loadSlideshow(); }, [loadSlideshow]);
+
+  // Авто-перелистывание (если включено в админке и фото больше одного)
   useEffect(() => {
     setPhotoIdx(0);
-    if (photos.length <= 1) return undefined;
-    const id = setInterval(() => setPhotoIdx((i) => (i + 1) % photos.length), 5000);
+    if (!slideshowAutoplay || photos.length <= 1) return undefined;
+    const ms = Math.max(1, slideshowInterval || 5) * 1000;
+    const id = setInterval(() => setPhotoIdx((i) => (i + 1) % photos.length), ms);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos.length, item?._id]);
+  }, [slideshowAutoplay, slideshowInterval, photos.length, item?._id]);
 
   if (!item) return null;
 
   const frame = imageFrameStyle(item);
   const activeIdx = photoIdx % (photos.length || 1);
+
+  // Ручной свайп фото пальцем (работает всегда, особенно когда авто выключено)
+  const swipe = photos.length > 1 ? {
+    onTouchStart: (e) => { touchX.current = e.touches[0].clientX; movedRef.current = false; },
+    onTouchMove: (e) => {
+      if (touchX.current != null && Math.abs(e.touches[0].clientX - touchX.current) > 8) movedRef.current = true;
+    },
+    onTouchEnd: (e) => {
+      if (touchX.current == null) return;
+      const dx = e.changedTouches[0].clientX - touchX.current;
+      touchX.current = null;
+      if (Math.abs(dx) > 30) {
+        e.stopPropagation();
+        setPhotoIdx((i) => (i + (dx < 0 ? 1 : -1) + photos.length) % photos.length);
+      }
+    },
+    onClick: (e) => { if (movedRef.current) { e.stopPropagation(); e.preventDefault(); movedRef.current = false; } },
+  } : {};
 
   const handleAdd = (e) => {
     e.stopPropagation();
@@ -84,13 +129,14 @@ export default function SushiCard({ item, layout = 'grid' }) {
 
         {/* RIGHT — image + add button */}
         <div style={listStyles.imgWrap}>
-          <div style={listStyles.imgClip}>
+          <div style={listStyles.imgClip} {...swipe}>
             {photos.length ? (
               <PhotoStack photos={photos} activeIdx={activeIdx} fit="cover" frame={frame} />
             ) : (
               <div style={{ ...listStyles.img, ...listStyles.imgPlaceholder }}>🍣</div>
             )}
             {!item.isAvailable && <div style={listStyles.soldOut}>{t('unavailable')}</div>}
+            {photos.length > 1 && <Dots count={photos.length} active={activeIdx} />}
           </div>
           <button
             className={'sushi-card__add' + (item.isAvailable === false ? ' sushi-card__add--disabled' : '')}
@@ -109,7 +155,7 @@ export default function SushiCard({ item, layout = 'grid' }) {
   return (
     <div className="sushi-card" onClick={() => navigate(`/menu/${item._id}`)}>
       {/* Image */}
-      <div className="sushi-card__img-wrap">
+      <div className="sushi-card__img-wrap" {...swipe}>
         {photos.length ? (
           <PhotoStack photos={photos} activeIdx={activeIdx} fit="contain" pad={10} frame={frame} />
         ) : (
@@ -129,6 +175,7 @@ export default function SushiCard({ item, layout = 'grid' }) {
         {!item.isAvailable && (
           <div style={styles.unavailableOverlay}>{t('unavailable')}</div>
         )}
+        {photos.length > 1 && <Dots count={photos.length} active={activeIdx} />}
       </div>
 
       {/* Info */}

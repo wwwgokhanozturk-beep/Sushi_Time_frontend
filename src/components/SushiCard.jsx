@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
@@ -12,14 +12,55 @@ export function imageFrameStyle(item) {
   return { transform: `translate(${x}%, ${y}%) scale(${s})`, transformOrigin: 'center' };
 }
 
+// Список фото блюда: images[] (если есть) иначе одиночный imageUrl
+function getPhotos(item) {
+  if (!item) return [];
+  if (Array.isArray(item.images) && item.images.length) return item.images.filter(Boolean);
+  return item.imageUrl ? [item.imageUrl] : [];
+}
+
+// Стек фото с плавным кросс-фейдом (активное — opacity 1)
+function PhotoStack({ photos, activeIdx, fit, pad, frame }) {
+  return photos.map((src, i) => (
+    <img
+      key={i}
+      src={src}
+      alt=""
+      loading="lazy"
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        objectFit: fit,
+        padding: pad || 0,
+        opacity: i === activeIdx ? 1 : 0,
+        transition: 'opacity 0.7s ease',
+        ...(frame || {}),
+      }}
+    />
+  ));
+}
+
 export default function SushiCard({ item, layout = 'grid' }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const addToCart = useCartStore((s) => s.addToCart);
 
+  const photos = getPhotos(item);
+  const [photoIdx, setPhotoIdx] = useState(0);
+  useEffect(() => {
+    setPhotoIdx(0);
+    if (photos.length <= 1) return undefined;
+    const id = setInterval(() => setPhotoIdx((i) => (i + 1) % photos.length), 5000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photos.length, item?._id]);
+
   if (!item) return null;
 
   const frame = imageFrameStyle(item);
+  const activeIdx = photoIdx % (photos.length || 1);
 
   const handleAdd = (e) => {
     e.stopPropagation();
@@ -43,12 +84,14 @@ export default function SushiCard({ item, layout = 'grid' }) {
 
         {/* RIGHT — image + add button */}
         <div style={listStyles.imgWrap}>
-          {item.imageUrl ? (
-            <img style={{ ...listStyles.img, ...frame }} src={item.imageUrl} alt={item.name} loading="lazy" />
-          ) : (
-            <div style={{ ...listStyles.img, ...listStyles.imgPlaceholder }}>🍣</div>
-          )}
-          {!item.isAvailable && <div style={listStyles.soldOut}>{t('unavailable')}</div>}
+          <div style={listStyles.imgClip}>
+            {photos.length ? (
+              <PhotoStack photos={photos} activeIdx={activeIdx} fit="cover" frame={frame} />
+            ) : (
+              <div style={{ ...listStyles.img, ...listStyles.imgPlaceholder }}>🍣</div>
+            )}
+            {!item.isAvailable && <div style={listStyles.soldOut}>{t('unavailable')}</div>}
+          </div>
           <button
             className={'sushi-card__add' + (item.isAvailable === false ? ' sushi-card__add--disabled' : '')}
             style={listStyles.addBtn}
@@ -67,14 +110,8 @@ export default function SushiCard({ item, layout = 'grid' }) {
     <div className="sushi-card" onClick={() => navigate(`/menu/${item._id}`)}>
       {/* Image */}
       <div className="sushi-card__img-wrap">
-        {item.imageUrl ? (
-          <img
-            className="sushi-card__img"
-            src={item.imageUrl}
-            alt={item.name}
-            loading="lazy"
-            style={frame || undefined}
-          />
+        {photos.length ? (
+          <PhotoStack photos={photos} activeIdx={activeIdx} fit="contain" pad={10} frame={frame} />
         ) : (
           <div
             className="sushi-card__img"
@@ -210,6 +247,7 @@ const listStyles = {
     WebkitBoxOrient: 'vertical',
   },
   imgWrap: { position: 'relative', width: 116, height: 116, flexShrink: 0 },
+  imgClip: { position: 'absolute', inset: 0, borderRadius: 16, overflow: 'hidden', background: 'var(--background)' },
   img: { width: 116, height: 116, borderRadius: 16, objectFit: 'cover', background: 'var(--background)', display: 'block' },
   imgPlaceholder: { display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 },
   soldOut: {

@@ -33,7 +33,7 @@ const SCROLL_OFFSET = NAVBAR_PX + CHIPBAR_PX + 12;
 
 export default function MenuPage() {
   const { t } = useTranslation();
-  const { items, loading, loadMenu } = useMenuStore();
+  const { items, loading, loadMenu, categoryOrder } = useMenuStore();
   const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [activeCat, setActiveCat] = useState(null);
@@ -68,10 +68,18 @@ export default function MenuPage() {
     for (const arr of map.values()) {
       arr.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     }
-    return [...map.entries()].sort(
-      ([a], [b]) => categoryPriority(a) - categoryPriority(b),
-    );
-  }, [items, search]);
+    // Порядок категорий: заданный в админке (categoryOrder), затем встроенный приоритет
+    const orderIndex = (cat) => {
+      const i = categoryOrder.indexOf(cat);
+      return i === -1 ? Infinity : i;
+    };
+    return [...map.entries()].sort(([a], [b]) => {
+      const oa = orderIndex(a);
+      const ob = orderIndex(b);
+      if (oa !== ob) return oa - ob;
+      return categoryPriority(a) - categoryPriority(b);
+    });
+  }, [items, search, categoryOrder]);
 
   useEffect(() => {
     if (!activeCat && grouped.length) setActiveCat(grouped[0][0]);

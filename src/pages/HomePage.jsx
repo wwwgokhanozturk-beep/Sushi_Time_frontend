@@ -63,6 +63,10 @@ export default function HomePage() {
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(it);
     }
+    // Внутри категории — порядок, заданный в админке (sortOrder)
+    for (const arr of map.values()) {
+      arr.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    }
 
     // Primary sort: admin-defined category order. Categories not in that
     // list fall back to the built-in priority and sit after ordered ones.

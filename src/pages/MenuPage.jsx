@@ -64,6 +64,10 @@ export default function MenuPage() {
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(it);
     }
+    // Внутри категории — порядок из админки (sortOrder)
+    for (const arr of map.values()) {
+      arr.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    }
     return [...map.entries()].sort(
       ([a], [b]) => categoryPriority(a) - categoryPriority(b),
     );

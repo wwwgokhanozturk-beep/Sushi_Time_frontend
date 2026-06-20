@@ -1,24 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
+import { BADGE_COLORS, pick } from '../utils/promo';
 
 const SLIDE_DURATION = 6000;
-
-const BADGE_COLORS = {
-  HOT: '#EF4444',
-  NEW: '#10B981',
-  SALE: '#F59E0B',
-  LIMITED: '#8B5CF6',
-};
-
-function pick(promo, field, lang) {
-  return (
-    (lang === 'ru' && promo[`${field}_ru`]) ||
-    (lang === 'tr' && promo[`${field}_tr`]) ||
-    promo[field] ||
-    ''
-  );
-}
 
 // Shown when there are no active promotions yet, so the carousel is never empty.
 const FALLBACK_SLIDES = [

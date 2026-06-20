@@ -1,30 +1,15 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
+import { BADGE_COLORS, pick } from '../utils/promo';
 
 const STORY_DURATION = 5000;
-
-const BADGE_COLORS = {
-  HOT: '#EF4444',
-  NEW: '#10B981',
-  SALE: '#F59E0B',
-  LIMITED: '#8B5CF6',
-};
 
 function fmtDate(str) {
   if (!str) return null;
   const d = new Date(str);
   if (isNaN(d)) return null;
   return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
-}
-
-function pick(promo, field, lang) {
-  return (
-    (lang === 'ru' && promo[`${field}_ru`]) ||
-    (lang === 'tr' && promo[`${field}_tr`]) ||
-    promo[field] ||
-    ''
-  );
 }
 
 // ─── Full-screen story viewer ──────────────────────────────────────────────

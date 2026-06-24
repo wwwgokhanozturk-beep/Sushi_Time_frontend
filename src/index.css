@@ -34,9 +34,13 @@
   padding: 0;
 }
 
+html {
+  /* Ultimate fallback colour shown only if the backdrop image fails to load. */
+  background-color: var(--background);
+}
+
 html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: var(--background);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -49,6 +53,25 @@ html, body {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
+}
+
+/* ── Mountain backdrop — mirrors the mobile app's AppBackground ──────────────
+   A fixed pseudo-element keeps the artwork pinned behind the scrolling content
+   (reliable on iOS, unlike `background-attachment: fixed`). A soft veil keeps
+   text and white cards readable, so the mountain only peeks through the gaps —
+   exactly like the native app. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(255, 251, 247, 0.20), rgba(245, 245, 247, 0.48)),
+    url('/mountain-bg.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  pointer-events: none;
 }
 
 #root {

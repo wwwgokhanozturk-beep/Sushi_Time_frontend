@@ -28,8 +28,8 @@ export default function RegisterPage() {
         setAuth(user, token, refreshToken);
         navigate('/profile');
       }
-    } catch {
-      setError(t('register_error'));
+    } catch (err) {
+      setError(err.response?.data?.message || t('register_error'));
     } finally {
       setLoading(false);
     }

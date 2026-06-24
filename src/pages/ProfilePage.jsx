@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useProfileStore } from '../store/profileStore';
 import { useOrderStore } from '../store/orderStore';
+import MapboxMap from '../components/MapboxMap';
 import i18n from '../i18n/index.js';
 
 const LANGS = [
@@ -17,11 +18,23 @@ export default function ProfilePage() {
   const profile = useProfileStore();
   const { orders } = useOrderStore();
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ name: profile.name, phone: profile.phone, address: profile.address, notes: profile.notes });
+  const [form, setForm] = useState({
+    name: profile.name, phone: profile.phone, address: profile.address,
+    buildingName: profile.buildingName, floor: profile.floor,
+    apartment: profile.apartment, doorCode: profile.doorCode, notes: profile.notes,
+  });
+  const [geo, setGeo] = useState(
+    profile.latitude != null && profile.longitude != null
+      ? { lat: profile.latitude, lng: profile.longitude }
+      : null
+  );
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
-    profile.updateProfile(form);
+    profile.updateProfile({
+      ...form,
+      ...(geo ? { latitude: geo.lat, longitude: geo.lng } : {}),
+    });
     setEditing(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -29,6 +42,14 @@ export default function ProfilePage() {
 
   const completedOrders = orders.filter((o) => o.status === 'delivered').length;
   const currentLang = i18n.language || 'en';
+
+  // Composed "building · floor · apartment · door" line for the read-only view.
+  const addrDetail = [
+    profile.buildingName && `${t('building_name')}: ${profile.buildingName}`,
+    profile.floor && `${t('floor')}: ${profile.floor}`,
+    profile.apartment && `${t('apartment')}: ${profile.apartment}`,
+    profile.doorCode && `${t('door_code')}: ${profile.doorCode}`,
+  ].filter(Boolean).join(' · ');
 
   return (
     <div className="page-enter" style={styles.page}>
@@ -79,6 +100,23 @@ export default function ProfilePage() {
               <FormField label={t('full_name')} value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
               <FormField label={t('phone_number')} value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} />
               <FormField label={t('delivery_address')} value={form.address} onChange={(e) => setForm(f => ({ ...f, address: e.target.value }))} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={styles.mapLabel}>{t('delivery_location')}</label>
+                <MapboxMap
+                  value={geo}
+                  height={220}
+                  onChange={(lat, lng) => setGeo({ lat, lng })}
+                  onAddress={(addr) => setForm(f => ({ ...f, address: addr }))}
+                />
+              </div>
+              <div style={styles.fieldRow}>
+                <FormField label={t('building_name')} value={form.buildingName} onChange={(e) => setForm(f => ({ ...f, buildingName: e.target.value }))} />
+                <FormField label={t('floor')} value={form.floor} onChange={(e) => setForm(f => ({ ...f, floor: e.target.value }))} />
+              </div>
+              <div style={styles.fieldRow}>
+                <FormField label={t('apartment')} value={form.apartment} onChange={(e) => setForm(f => ({ ...f, apartment: e.target.value }))} />
+                <FormField label={t('door_code')} value={form.doorCode} onChange={(e) => setForm(f => ({ ...f, doorCode: e.target.value }))} />
+              </div>
               <FormField label={t('order_notes')} value={form.notes} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} />
             </div>
           ) : (
@@ -86,6 +124,10 @@ export default function ProfilePage() {
               <InfoRow icon="👤" label={t('full_name')} value={profile.name || '—'} />
               <InfoRow icon="📞" label={t('phone_number')} value={profile.phone || '—'} />
               <InfoRow icon="📍" label={t('delivery_address')} value={profile.address || '—'} />
+              {addrDetail && <InfoRow icon="🏢" label={t('delivery_location')} value={addrDetail} />}
+              {profile.latitude != null && (
+                <InfoRow icon="🗺️" label="GPS" value={`${profile.latitude.toFixed(5)}, ${profile.longitude.toFixed(5)}`} />
+              )}
             </div>
           )}
         </div>
@@ -179,6 +221,8 @@ const styles = {
   editBtn: { fontSize: 13, fontWeight: 700, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer' },
   savedMsg: { fontSize: 13, color: 'var(--success)', fontWeight: 600 },
   editForm: { display: 'flex', flexDirection: 'column', gap: 10 },
+  fieldRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
+  mapLabel: { fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 },
   infoList: { display: 'flex', flexDirection: 'column' },
   langList: { display: 'flex', flexDirection: 'column', gap: 4 },
   langItem: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 'var(--radius-md)', border: 'none', background: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 500 },

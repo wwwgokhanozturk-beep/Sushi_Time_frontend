@@ -22,14 +22,18 @@ export default function CheckoutPage() {
     customerName: profile.name || '',
     phone: profile.phone || '',
     address: profile.address || '',
-    buildingName: '',
-    floor: '',
-    apartment: '',
-    doorCode: '',
-    notes: '',
+    buildingName: profile.buildingName || '',
+    floor: profile.floor || '',
+    apartment: profile.apartment || '',
+    doorCode: profile.doorCode || '',
+    notes: profile.notes || '',
   });
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [geo, setGeo] = useState(null); // { lat, lng } выбранная точка доставки
+  const [geo, setGeo] = useState(
+    profile.latitude != null && profile.longitude != null
+      ? { lat: profile.latitude, lng: profile.longitude }
+      : null
+  ); // { lat, lng } выбранная точка доставки
   const [tip, setTip] = useState(0);
   const [promoCode, setPromoCode] = useState('');
   const [promoDiscount, setPromoDiscount] = useState(0);
@@ -82,6 +86,18 @@ export default function CheckoutPage() {
     };
     const order = await placeOrder(payload);
     if (order) {
+      // Remember the delivery details so the next order is pre-filled.
+      profile.updateProfile({
+        name: form.customerName,
+        phone: form.phone,
+        address: form.address,
+        buildingName: form.buildingName,
+        floor: form.floor,
+        apartment: form.apartment,
+        doorCode: form.doorCode,
+        notes: form.notes,
+        ...(geo ? { latitude: geo.lat, longitude: geo.lng } : {}),
+      });
       clearCart();
       navigate('/order-success', { state: { order } });
     }

@@ -9,7 +9,7 @@ const load = () => {
 };
 const save = (data) => localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
-const defaults = { name: '', phone: '', address: '', notes: '', email: '', token: null, refreshToken: null, userId: null, isLoggedIn: false, isGuest: false };
+const defaults = { name: '', phone: '', address: '', buildingName: '', floor: '', apartment: '', doorCode: '', notes: '', latitude: null, longitude: null, email: '', token: null, refreshToken: null, userId: null, isLoggedIn: false, isGuest: false };
 
 export const useProfileStore = create((set, get) => ({
   ...defaults,
@@ -18,7 +18,18 @@ export const useProfileStore = create((set, get) => ({
 
   updateProfile: (fields) => {
     const s = get();
-    const patch = { name: fields.name ?? s.name, phone: fields.phone ?? s.phone, address: fields.address ?? s.address, notes: fields.notes ?? s.notes };
+    const patch = {
+      name: fields.name ?? s.name,
+      phone: fields.phone ?? s.phone,
+      address: fields.address ?? s.address,
+      buildingName: fields.buildingName ?? s.buildingName,
+      floor: fields.floor ?? s.floor,
+      apartment: fields.apartment ?? s.apartment,
+      doorCode: fields.doorCode ?? s.doorCode,
+      notes: fields.notes ?? s.notes,
+      latitude: fields.latitude ?? s.latitude,
+      longitude: fields.longitude ?? s.longitude,
+    };
     set(patch);
     save({ ...get() });
   },

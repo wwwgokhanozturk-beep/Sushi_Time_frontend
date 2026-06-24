@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
 import { BADGE_COLORS, pick } from '../utils/promo';
+import PromoMedia from './PromoMedia';
 
 const SLIDE_DURATION = 6000;
 
@@ -92,7 +93,7 @@ export default function BannerCarousel() {
             return (
               <div key={promo._id} style={styles.slide}>
                 {promo.imageUrl ? (
-                  <img src={promo.imageUrl} alt={title} style={styles.img} />
+                  <PromoMedia src={promo.imageUrl} alt={title} style={styles.img} />
                 ) : (
                   <div
                     style={{

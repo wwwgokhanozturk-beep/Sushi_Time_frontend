@@ -17,3 +17,10 @@ export function pick(promo, field, lang) {
     ''
   );
 }
+
+// A promotion's media lives in `imageUrl`, but it may actually be a video.
+// True when the URL points to a video so the UI can render <video> not <img>.
+const VIDEO_URL_RE = /\.(mp4|m4v|mov|webm|ogg|m3u8)(\?.*)?$/i;
+export function isVideoUrl(url) {
+  return typeof url === 'string' && VIDEO_URL_RE.test(url);
+}

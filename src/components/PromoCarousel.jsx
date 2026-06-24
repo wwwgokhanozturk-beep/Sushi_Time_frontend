@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
 import { BADGE_COLORS, pick } from '../utils/promo';
+import PromoMedia from './PromoMedia';
 
 const STORY_DURATION = 5000;
 
@@ -80,7 +81,7 @@ function StoryViewer({ promotions, startIndex, lang, onClose }) {
       <div style={sv.stage} onClick={(e) => e.stopPropagation()}>
         {/* Background */}
         {promo.imageUrl ? (
-          <img src={promo.imageUrl} alt={title} style={sv.bg} />
+          <PromoMedia src={promo.imageUrl} alt={title} style={sv.bg} />
         ) : (
           <div style={{ ...sv.bg, ...sv.placeholder }}>🎉</div>
         )}
@@ -174,7 +175,7 @@ export default function PromoCarousel() {
               <span style={{ ...styles.ring, ...(isSeen ? styles.ringSeen : {}) }}>
                 <span style={styles.inner}>
                   {promo.imageUrl ? (
-                    <img src={promo.imageUrl} alt={label} style={styles.img} />
+                    <PromoMedia src={promo.imageUrl} alt={label} style={styles.img} />
                   ) : (
                     <span style={styles.fallback}>🎉</span>
                   )}

@@ -93,8 +93,13 @@ export default function BannerCarousel() {
             return (
               <div key={promo._id} style={styles.slide}>
                 {promo.imageUrl ? (
-                  <PromoMedia src={promo.imageUrl} alt={title} style={styles.img}
-                    scale={promo.imageScale} offsetX={promo.imageOffsetX} offsetY={promo.imageOffsetY} />
+                  <>
+                    {/* Размытый фон того же фото — заполняет широкий баннер,
+                        пока само фото показывается целиком (contain). */}
+                    <div style={{ ...styles.backdrop, backgroundImage: `url("${promo.imageUrl}")` }} />
+                    <PromoMedia src={promo.imageUrl} alt={title} style={styles.img}
+                      scale={promo.imageScale} offsetX={promo.imageOffsetX} offsetY={promo.imageOffsetY} />
+                  </>
                 ) : (
                   <div
                     style={{
@@ -180,9 +185,29 @@ const styles = {
     width: '100%',
     aspectRatio: '3 / 1',
     minHeight: 200,
+    overflow: 'hidden',
     background: 'var(--primary-light, #FDECEA)',
   },
-  img: { width: '100%', height: '100%', objectFit: 'contain', display: 'block' },
+  img: {
+    position: 'relative',
+    zIndex: 1,
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+    display: 'block',
+  },
+  // Размытая «подложка» под contain-фото: фото с любыми пропорциями видно
+  // целиком (без обрезки), а пустые поля в широком баннере не выглядят пустыми.
+  backdrop: {
+    position: 'absolute',
+    inset: 0,
+    zIndex: 0,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    filter: 'blur(24px)',
+    transform: 'scale(1.15)',
+    pointerEvents: 'none',
+  },
   placeholder: {
     width: '100%',
     height: '100%',
@@ -195,6 +220,7 @@ const styles = {
   overlay: {
     position: 'absolute',
     inset: 0,
+    zIndex: 2,
     background:
       'linear-gradient(90deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0) 70%)',
   },
@@ -209,6 +235,7 @@ const styles = {
     flexDirection: 'column',
     justifyContent: 'center',
     gap: 10,
+    zIndex: 3,
   },
   badge: {
     alignSelf: 'flex-start',

@@ -6,7 +6,7 @@ import { isVideoUrl } from '../utils/promo';
 // video and render <video> instead. The URL often has no file extension
 // (e.g. UploadThing), so besides the extension check we probe the Content-Type
 // with a HEAD request, and keep an onError fallback as a last resort.
-export default function PromoMedia({ src, alt = '', style, muted = true }) {
+export default function PromoMedia({ src, alt = '', style, muted = true, scale = 1, offsetX = 0, offsetY = 0 }) {
   // 'video' | 'image' | 'unknown'
   const [kind, setKind] = useState(() => (isVideoUrl(src) ? 'video' : 'unknown'));
 
@@ -26,11 +26,16 @@ export default function PromoMedia({ src, alt = '', style, muted = true }) {
     return () => { cancelled = true; };
   }, [src]);
 
+  // Кадрирование, заданное в админке (масштаб + смещение в % рамки) — как в меню.
+  const framed = (scale !== 1 || offsetX !== 0 || offsetY !== 0)
+    ? { ...style, transform: `translate(${offsetX}%, ${offsetY}%) scale(${scale})`, transformOrigin: 'center' }
+    : style;
+
   if (kind === 'video') {
     return (
       <video
         src={src}
-        style={style}
+        style={framed}
         autoPlay
         muted={muted}
         loop
@@ -42,5 +47,5 @@ export default function PromoMedia({ src, alt = '', style, muted = true }) {
 
   // image or still-unknown: render <img>; if it turns out to be a video the
   // load fails and we fall back to <video>.
-  return <img src={src} alt={alt} style={style} onError={() => setKind('video')} />;
+  return <img src={src} alt={alt} style={framed} onError={() => setKind('video')} />;
 }

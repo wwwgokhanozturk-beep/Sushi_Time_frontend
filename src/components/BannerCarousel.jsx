@@ -93,7 +93,8 @@ export default function BannerCarousel() {
             return (
               <div key={promo._id} style={styles.slide}>
                 {promo.imageUrl ? (
-                  <PromoMedia src={promo.imageUrl} alt={title} style={styles.img} />
+                  <PromoMedia src={promo.imageUrl} alt={title} style={styles.img}
+                    scale={promo.imageScale} offsetX={promo.imageOffsetX} offsetY={promo.imageOffsetY} />
                 ) : (
                   <div
                     style={{

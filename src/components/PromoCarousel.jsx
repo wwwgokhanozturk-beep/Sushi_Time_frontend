@@ -81,7 +81,8 @@ function StoryViewer({ promotions, startIndex, lang, onClose }) {
       <div style={sv.stage} onClick={(e) => e.stopPropagation()}>
         {/* Background */}
         {promo.imageUrl ? (
-          <PromoMedia src={promo.imageUrl} alt={title} style={sv.bg} />
+          <PromoMedia src={promo.imageUrl} alt={title} style={sv.bg}
+            scale={promo.imageScale} offsetX={promo.imageOffsetX} offsetY={promo.imageOffsetY} />
         ) : (
           <div style={{ ...sv.bg, ...sv.placeholder }}>🎉</div>
         )}
@@ -175,7 +176,8 @@ export default function PromoCarousel() {
               <span style={{ ...styles.ring, ...(isSeen ? styles.ringSeen : {}) }}>
                 <span style={styles.inner}>
                   {promo.imageUrl ? (
-                    <PromoMedia src={promo.imageUrl} alt={label} style={styles.img} />
+                    <PromoMedia src={promo.imageUrl} alt={label} style={styles.img}
+                      scale={promo.imageScale} offsetX={promo.imageOffsetX} offsetY={promo.imageOffsetY} />
                   ) : (
                     <span style={styles.fallback}>🎉</span>
                   )}

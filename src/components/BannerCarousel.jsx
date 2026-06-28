@@ -182,7 +182,7 @@ const styles = {
     minHeight: 200,
     background: 'var(--primary-light, #FDECEA)',
   },
-  img: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
+  img: { width: '100%', height: '100%', objectFit: 'contain', display: 'block' },
   placeholder: {
     width: '100%',
     height: '100%',

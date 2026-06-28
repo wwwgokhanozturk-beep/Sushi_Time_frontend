@@ -51,6 +51,9 @@ const en = {
   tap_map_to_pick: 'Tap the map to mark your delivery point',
   location_denied: 'Location access denied', location_unavailable: 'Geolocation not supported', map_load_error: 'Map failed to load',
   contact_us: 'Contact us',
+  closed_title: "We're currently closed", closed_subtitle: 'Online ordering is unavailable right now. You can still browse our menu.',
+  closed_today_hours: "Today's hours", closed_today_off: 'Closed today', view_menu: 'View menu',
+  closed_order_blocked: "We're closed right now — ordering is unavailable",
 };
 
 const ru = {
@@ -102,6 +105,9 @@ const ru = {
   tap_map_to_pick: 'Нажмите на карту, чтобы отметить точку доставки',
   location_denied: 'Доступ к геолокации запрещён', location_unavailable: 'Геолокация не поддерживается', map_load_error: 'Не удалось загрузить карту',
   contact_us: 'Связаться с нами',
+  closed_title: 'Сейчас мы закрыты', closed_subtitle: 'Онлайн-заказы временно недоступны. Но вы можете посмотреть меню.',
+  closed_today_hours: 'Часы работы сегодня', closed_today_off: 'Сегодня выходной', view_menu: 'Посмотреть меню',
+  closed_order_blocked: 'Сейчас закрыто — оформление заказа недоступно',
 };
 
 const tr = {
@@ -153,6 +159,9 @@ const tr = {
   tap_map_to_pick: 'Teslimat noktasını işaretlemek için haritaya dokunun',
   location_denied: 'Konum erişimi reddedildi', location_unavailable: 'Konum desteklenmiyor', map_load_error: 'Harita yüklenemedi',
   contact_us: 'Bize ulaşın',
+  closed_title: 'Şu anda kapalıyız', closed_subtitle: 'Çevrimiçi sipariş şu an kapalı. Yine de menümüze göz atabilirsiniz.',
+  closed_today_hours: 'Bugünkü çalışma saatleri', closed_today_off: 'Bugün kapalıyız', view_menu: 'Menüye göz at',
+  closed_order_blocked: 'Şu anda kapalıyız — sipariş alınamıyor',
 };
 
 const savedLang = localStorage.getItem('sushi_lang') || 'en';

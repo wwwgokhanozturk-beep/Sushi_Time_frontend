@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import httpClient from '../api/httpClient';
+import { computeOpenState } from '../utils/businessHours';
 
 // Глобальные настройки сайта (контактный номер и т.п.)
 export const useSettingsStore = create((set, get) => ({
@@ -36,6 +37,33 @@ export const useSettingsStore = create((set, get) => ({
     } catch {
       /* оставляем дефолты */
     }
+  },
+
+  // Режим работы ресторана (часы/выходные)
+  businessHours: null,
+  businessHoursLoaded: false,
+
+  loadBusinessHours: async () => {
+    if (get().businessHoursLoaded) return;
+    try {
+      const res = await httpClient.get('/settings/business-hours');
+      set({ businessHours: res.data?.data?.businessHours || null, businessHoursLoaded: true });
+    } catch {
+      set({ businessHoursLoaded: true });
+    }
+  },
+
+  // Открыт ли ресторан сейчас (по часовому поясу заведения). До загрузки — открыт.
+  isOpenNow: () => {
+    const bh = get().businessHours;
+    if (!bh) return true;
+    return computeOpenState(bh).open;
+  },
+
+  // Полное состояние для UI (часы сегодня, причина закрытия и т.п.)
+  openState: () => {
+    const bh = get().businessHours;
+    return computeOpenState(bh || { enabled: false });
   },
 }));
 

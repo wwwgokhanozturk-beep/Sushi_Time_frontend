@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useSettingsStore } from './store/settingsStore';
+import ClosedNotice from './components/ClosedNotice';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
 import HomePage from './pages/HomePage';
@@ -17,6 +19,12 @@ import ChatWidget from './components/ChatWidget';
 import CartBar from './components/CartBar';
 
 export default function App() {
+  const loadBusinessHours = useSettingsStore((s) => s.loadBusinessHours);
+
+  useEffect(() => {
+    loadBusinessHours();
+  }, [loadBusinessHours]);
+
   return (
     <BrowserRouter>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -39,6 +47,7 @@ export default function App() {
         </main>
         <CartBar />
         <ChatWidget />
+        <ClosedNotice />
         {/* Bottom nav only on mobile */}
         <MobileOnly>
           <BottomNav />

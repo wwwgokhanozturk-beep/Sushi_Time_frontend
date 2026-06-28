@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useCartStore, selectTotalPrice } from '../store/cartStore';
 import { useOrderStore } from '../store/orderStore';
 import { useProfileStore } from '../store/profileStore';
+import { useSettingsStore } from '../store/settingsStore';
 import httpClient from '../api/httpClient';
 import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, SERVICE_FEE, TIP_OPTIONS } from '../theme';
 import useIsMobile from '../hooks/useIsMobile';
@@ -17,6 +18,8 @@ export default function CheckoutPage() {
   const subtotal = useCartStore(selectTotalPrice);
   const { placeOrder, loading } = useOrderStore();
   const profile = useProfileStore();
+  const isOpenNow = useSettingsStore((s) => s.isOpenNow);
+  const open = isOpenNow();
 
   const [form, setForm] = useState({
     customerName: profile.name || '',
@@ -75,6 +78,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    if (!open) return; // ресторан закрыт — сервер всё равно отклонит
     const payload = {
       ...form,
       items: items.map(({ menuItem, quantity }) => ({ menuItemId: menuItem._id, quantity })),
@@ -214,8 +218,18 @@ export default function CheckoutPage() {
               <SummaryRow label={t('total')} value={`${total.toFixed(2)} ₺`} bold />
             </div>
 
-            <button style={{ ...styles.placeBtn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading}>
-              {loading ? '...' : t('place_order')}
+            {!open && (
+              <div style={styles.closedBanner}>
+                🌙 {t('closed_order_blocked')}
+              </div>
+            )}
+
+            <button
+              style={{ ...styles.placeBtn, opacity: (loading || !open) ? 0.55 : 1, cursor: (loading || !open) ? 'not-allowed' : 'pointer' }}
+              onClick={handleSubmit}
+              disabled={loading || !open}
+            >
+              {loading ? '...' : (open ? t('place_order') : t('closed_title'))}
             </button>
           </div>
         </div>
@@ -284,4 +298,5 @@ const styles = {
   summaryRows: { display: 'flex', flexDirection: 'column', gap: 8 },
   divider: { height: 1, background: 'var(--divider)' },
   placeBtn: { width: '100%', padding: '14px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 'var(--radius-full)', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: 'var(--shadow-glow)' },
+  closedBanner: { padding: '10px 14px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, textAlign: 'center' },
 };

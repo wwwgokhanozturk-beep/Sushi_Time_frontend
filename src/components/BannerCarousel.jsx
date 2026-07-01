@@ -48,6 +48,7 @@ export default function BannerCarousel() {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
+  const touchStartX = useRef(null);
 
   useEffect(() => {
     httpClient
@@ -67,6 +68,17 @@ export default function BannerCarousel() {
   const next = useCallback(() => goTo(idx + 1), [goTo, idx]);
   const prev = useCallback(() => goTo(idx - 1), [goTo, idx]);
 
+  // Свайп пальцем: листаем слайды без кнопок-стрелок.
+  const onTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 40) (dx < 0 ? next : prev)();
+    touchStartX.current = null;
+  };
+
   // Auto-advance
   useEffect(() => {
     if (count <= 1 || paused) return;
@@ -83,6 +95,8 @@ export default function BannerCarousel() {
       style={styles.wrap}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
     >
       <div style={styles.viewport}>
         <div style={{ ...styles.track, transform: `translateX(-${idx * 100}%)` }}>
@@ -131,21 +145,6 @@ export default function BannerCarousel() {
 
       {count > 1 && (
         <>
-          <button
-            style={{ ...styles.arrow, left: 16 }}
-            onClick={prev}
-            aria-label="Previous"
-          >
-            ‹
-          </button>
-          <button
-            style={{ ...styles.arrow, right: 16 }}
-            onClick={next}
-            aria-label="Next"
-          >
-            ›
-          </button>
-
           <div style={styles.dots}>
             {slides.map((_, i) => (
               <button
@@ -274,27 +273,6 @@ const styles = {
     padding: '6px 16px',
     borderRadius: 999,
     marginTop: 4,
-  },
-  arrow: {
-    position: 'absolute',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    width: 40,
-    height: 40,
-    borderRadius: '50%',
-    border: 'none',
-    background: 'rgba(255,255,255,0.85)',
-    color: '#0D0D0D',
-    fontSize: 24,
-    fontWeight: 700,
-    lineHeight: 1,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-    zIndex: 5,
-    paddingBottom: 3,
   },
   dots: {
     position: 'absolute',

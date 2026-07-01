@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMenuStore } from '../store/menuStore';
-import PromoCarousel from '../components/PromoCarousel';
 import BannerCarousel from '../components/BannerCarousel';
 import SushiCard from '../components/SushiCard';
 import useIsMobile from '../hooks/useIsMobile';
@@ -138,8 +137,6 @@ export default function HomePage() {
       <div style={styles.container}>
         {/* Hero banner carousel */}
         <BannerCarousel />
-
-        <PromoCarousel />
 
         <div style={styles.infoBar}>
           <div style={styles.infoItem}>🚚 <span>{t('free_delivery')}</span></div>

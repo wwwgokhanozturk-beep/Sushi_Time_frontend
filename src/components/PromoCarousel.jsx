@@ -125,7 +125,7 @@ function StoryViewer({ promotions, startIndex, lang, onClose }) {
           {promo.badge && (
             <span style={{ ...sv.badge, background: badgeColor }}>{promo.badge}</span>
           )}
-          <div style={sv.title}>{title}</div>
+          {title && <div style={sv.title}>{title}</div>}
           {desc && <div style={sv.desc}>{desc}</div>}
           <div style={sv.metaRow}>
             {promo.discountPercent != null && (
@@ -183,9 +183,11 @@ export default function PromoCarousel() {
                   )}
                 </span>
               </span>
-              <span style={{ ...styles.label, ...(isSeen ? styles.labelSeen : {}) }}>
-                {label}
-              </span>
+              {label && (
+                <span style={{ ...styles.label, ...(isSeen ? styles.labelSeen : {}) }}>
+                  {label}
+                </span>
+              )}
             </button>
           );
         })}

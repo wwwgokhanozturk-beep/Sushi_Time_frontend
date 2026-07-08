@@ -4,14 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useMenuStore } from '../store/menuStore';
 import BannerCarousel from '../components/BannerCarousel';
 import SushiCard from '../components/SushiCard';
+import CategoryChip from '../components/CategoryChip';
 import useIsMobile from '../hooks/useIsMobile';
-
-const CATEGORY_KEYS = {
-  rolls: 'cat_rolls', nigiri: 'cat_nigiri', sashimi: 'cat_sashimi',
-  sets: 'cat_sets', tempura: 'cat_tempura', soups: 'cat_soups', drinks: 'cat_drinks',
-  desserts: 'cat_desserts', salads: 'cat_salads', maki: 'cat_maki', uramaki: 'cat_uramaki',
-  gunkan: 'cat_gunkan', wok: 'cat_wok', appetizers: 'cat_appetizers',
-};
+import { CATEGORY_KEYS } from '../utils/categories';
 
 // Sets → Rolls / Sushi → Snacks → Drinks
 const categoryPriority = (cat) => {
@@ -36,7 +31,7 @@ const SCROLL_OFFSET = NAVBAR_PX + CHIPBAR_PX + 12;
 export default function HomePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { items, loading, loadMenu, categoryOrder } = useMenuStore();
+  const { items, loading, loadMenu, categoryOrder, categoryImages } = useMenuStore();
   const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [activeCat, setActiveCat] = useState(null);
@@ -165,22 +160,17 @@ export default function HomePage() {
         <div style={styles.stickyBar}>
           <div style={styles.stickyInner}>
             <div ref={chipBarRef} className="no-scrollbar" style={styles.catScroll}>
-              {grouped.map(([cat]) => {
-                const isActive = activeCat === cat;
-                return (
-                  <button
-                    key={cat}
-                    ref={(el) => (chipRefs.current[cat] = el)}
-                    style={{
-                      ...styles.catBtn,
-                      ...(isActive ? styles.catBtnActive : {}),
-                    }}
-                    onClick={() => scrollToCategory(cat)}
-                  >
-                    {t(CATEGORY_KEYS[cat] || cat)}
-                  </button>
-                );
-              })}
+              {grouped.map(([cat]) => (
+                <CategoryChip
+                  key={cat}
+                  cat={cat}
+                  label={t(CATEGORY_KEYS[cat] || cat)}
+                  image={categoryImages[cat]}
+                  isActive={activeCat === cat}
+                  onClick={() => scrollToCategory(cat)}
+                  chipRef={(el) => (chipRefs.current[cat] = el)}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -270,21 +260,7 @@ const styles = {
     borderBottom: '1px solid var(--divider)',
   },
   stickyInner: { maxWidth: '100%', margin: '0 auto', padding: '12px clamp(16px, 3vw, 40px)' },
-  catScroll: { display: 'flex', gap: 8, overflowX: 'auto', scrollBehavior: 'smooth' },
-  catBtn: {
-    flexShrink: 0,
-    padding: '8px 16px',
-    borderRadius: 'var(--radius-full)',
-    fontSize: 13,
-    fontWeight: 600,
-    border: '1.5px solid var(--divider)',
-    background: '#fff',
-    color: 'var(--text-secondary)',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
-  },
-  catBtnActive: { background: 'var(--primary)', color: '#fff', border: '1.5px solid var(--primary)' },
+  catScroll: { display: 'flex', gap: 8, overflowX: 'auto', scrollBehavior: 'smooth', alignItems: 'center' },
   section: { display: 'flex', flexDirection: 'column', gap: 14, scrollMarginTop: 140 },
   sectionTitle: { fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: -0.3 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20 },

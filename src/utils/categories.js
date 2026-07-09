@@ -20,3 +20,16 @@ export const CATEGORY_EMOJI = {
 };
 
 export const categoryEmoji = (cat) => CATEGORY_EMOJI[(cat || '').toLowerCase()] || '🍽️';
+
+// Display label for a category: admin-set custom name (in the active language,
+// with fallback to any set language), else the built-in i18n translation.
+// `names` is the categoryNames map { slug: { en, ru, tr } }; `t` is i18next.
+export function categoryLabel(cat, names, lang, t) {
+  const l = (lang || 'en').slice(0, 2);
+  const custom = names?.[cat];
+  if (custom) {
+    const picked = custom[l] || custom.en || custom.ru || custom.tr;
+    if (picked) return picked;
+  }
+  return t(CATEGORY_KEYS[cat] || cat);
+}

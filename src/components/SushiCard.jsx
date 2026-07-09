@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
 import { useSettingsStore } from '../store/settingsStore';
+import { pickLang } from '../utils/localized';
 
 // Кадрирование фото, заданное в админке (масштаб + смещение в % рамки)
 export function imageFrameStyle(item) {
@@ -59,7 +60,7 @@ function PhotoStack({ photos, activeIdx, fit, pad, frame }) {
 }
 
 export default function SushiCard({ item, layout = 'grid' }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const addToCart = useCartStore((s) => s.addToCart);
 
@@ -86,6 +87,8 @@ export default function SushiCard({ item, layout = 'grid' }) {
 
   if (!item) return null;
 
+  const name = pickLang(item, 'name', i18n.language);
+  const description = pickLang(item, 'description', i18n.language);
   const frame = imageFrameStyle(item);
   const activeIdx = photoIdx % (photos.length || 1);
 
@@ -119,12 +122,12 @@ export default function SushiCard({ item, layout = 'grid' }) {
       <div style={listStyles.row} onClick={() => navigate(`/menu/${item._id}`)}>
         {/* LEFT — text */}
         <div style={listStyles.content}>
-          <div style={listStyles.name}>{item.name}</div>
+          <div style={listStyles.name}>{name}</div>
           <div style={listStyles.priceRow}>
             <span style={listStyles.price}>{item.price} ₺</span>
             {hasDiscount && <span style={listStyles.compare}>{item.comparePrice} ₺</span>}
           </div>
-          {item.description && <div style={listStyles.desc}>{item.description}</div>}
+          {description && <div style={listStyles.desc}>{description}</div>}
         </div>
 
         {/* RIGHT — image + add button */}
@@ -180,9 +183,9 @@ export default function SushiCard({ item, layout = 'grid' }) {
 
       {/* Info */}
       <div style={styles.info}>
-        <div style={styles.name}>{item.name}</div>
-        {item.description && (
-          <div style={styles.desc}>{item.description}</div>
+        <div style={styles.name}>{name}</div>
+        {description && (
+          <div style={styles.desc}>{description}</div>
         )}
         <div style={styles.meta}>
           {item.preparationTime && (

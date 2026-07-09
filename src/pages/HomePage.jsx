@@ -6,7 +6,7 @@ import BannerCarousel from '../components/BannerCarousel';
 import SushiCard from '../components/SushiCard';
 import CategoryChip from '../components/CategoryChip';
 import useIsMobile from '../hooks/useIsMobile';
-import { CATEGORY_KEYS } from '../utils/categories';
+import { categoryLabel } from '../utils/categories';
 
 // Sets → Rolls / Sushi → Snacks → Drinks
 const categoryPriority = (cat) => {
@@ -29,9 +29,9 @@ const CHIPBAR_PX = 64;
 const SCROLL_OFFSET = NAVBAR_PX + CHIPBAR_PX + 12;
 
 export default function HomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { items, loading, loadMenu, categoryOrder, categoryImages } = useMenuStore();
+  const { items, loading, loadMenu, categoryOrder, categoryImages, categoryNames } = useMenuStore();
   const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [activeCat, setActiveCat] = useState(null);
@@ -164,7 +164,7 @@ export default function HomePage() {
                 <CategoryChip
                   key={cat}
                   cat={cat}
-                  label={t(CATEGORY_KEYS[cat] || cat)}
+                  label={categoryLabel(cat, categoryNames, i18n.language, t)}
                   image={categoryImages[cat]}
                   isActive={activeCat === cat}
                   onClick={() => scrollToCategory(cat)}
@@ -190,7 +190,7 @@ export default function HomePage() {
               ref={(el) => (sectionRefs.current[cat] = el)}
               style={styles.section}
             >
-              <h2 style={styles.sectionTitle}>{t(CATEGORY_KEYS[cat] || cat)}</h2>
+              <h2 style={styles.sectionTitle}>{categoryLabel(cat, categoryNames, i18n.language, t)}</h2>
               <div style={isMobile ? styles.listContainer : styles.grid}>
                 {list.map((item) => (
                   <SushiCard key={item._id} item={item} layout={isMobile ? 'list' : 'grid'} />

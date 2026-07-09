@@ -6,6 +6,7 @@ export const useMenuStore = create((set, get) => ({
   categories: ['All'],
   categoryOrder: [],
   categoryImages: {},
+  categoryNames: {},
   selectedCategory: null,
   loading: false,
   error: null,
@@ -15,16 +16,18 @@ export const useMenuStore = create((set, get) => ({
     try {
       const params = { limit: 1000, ...(category ? { category } : {}) };
       const needsMeta = get().categories.length <= 1;
-      const [itemsRes, catsRes, orderRes, imagesRes] = await Promise.all([
+      const [itemsRes, catsRes, orderRes, imagesRes, namesRes] = await Promise.all([
         httpClient.get('/menu', { params }),
         needsMeta ? httpClient.get('/menu/categories') : Promise.resolve(null),
         needsMeta ? httpClient.get('/settings/category-order') : Promise.resolve(null),
         needsMeta ? httpClient.get('/settings/category-images') : Promise.resolve(null),
+        needsMeta ? httpClient.get('/settings/category-names') : Promise.resolve(null),
       ]);
       const items = itemsRes.data?.data?.items || [];
       const cats = catsRes?.data?.data?.categories;
       const order = orderRes?.data?.data?.categoryOrder;
       const images = imagesRes?.data?.data?.categoryImages;
+      const catNames = namesRes?.data?.data?.categoryNames;
       set({
         items,
         loading: false,
@@ -32,6 +35,7 @@ export const useMenuStore = create((set, get) => ({
         ...(cats ? { categories: ['All', ...cats] } : {}),
         ...(order ? { categoryOrder: order } : {}),
         ...(images ? { categoryImages: images } : {}),
+        ...(catNames ? { categoryNames: catNames } : {}),
       });
     } catch (e) {
       set({ loading: false, error: e.response?.data?.message || 'Failed to load menu' });

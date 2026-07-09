@@ -31,7 +31,8 @@ export default function ItemDetailPage() {
     setTimeout(() => setAdded(false), 1500);
   };
 
-  const lang = i18n.language || 'en';
+  const lang = (i18n.language || 'en').slice(0, 2);
+  const name = (lang === 'ru' && item?.name_ru) || (lang === 'tr' && item?.name_tr) || item?.name || '';
   const description = (lang === 'ru' && item?.description_ru) || (lang === 'tr' && item?.description_tr) || item?.description || '';
   const ingredients = (lang === 'ru' && item?.ingredients_ru?.length ? item.ingredients_ru : null) ||
     (lang === 'tr' && item?.ingredients_tr?.length ? item.ingredients_tr : null) ||
@@ -57,7 +58,7 @@ export default function ItemDetailPage() {
           {/* Image */}
           <div style={styles.imgWrap}>
             {item.imageUrl ? (
-              <img src={item.imageUrl} alt={item.name} style={{ ...styles.img, ...imageFrameStyle(item) }} />
+              <img src={item.imageUrl} alt={name} style={{ ...styles.img, ...imageFrameStyle(item) }} />
             ) : (
               <div style={{ ...styles.img, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 80, background: 'var(--divider)' }}>
                 🍣
@@ -83,7 +84,7 @@ export default function ItemDetailPage() {
               </span>
             </div>
 
-            <h1 style={styles.name}>{item.name}</h1>
+            <h1 style={styles.name}>{name}</h1>
 
             {/* Price */}
             <div style={styles.priceRow}>

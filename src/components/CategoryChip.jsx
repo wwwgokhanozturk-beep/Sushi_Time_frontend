@@ -60,8 +60,7 @@ const st = {
   },
   ringActive: {
     background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary, #FF6B35) 100%)',
-    boxShadow: '0 4px 14px rgba(232,24,27,0.32)',
-    transform: 'scale(1.05)',
+    boxShadow: '0 3px 10px rgba(232,24,27,0.30)',
   },
   circle: {
     flex: 1,

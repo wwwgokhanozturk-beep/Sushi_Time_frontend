@@ -23,6 +23,7 @@ export default function CheckoutPage() {
   const districts = useSettingsStore((s) => s.districts);
   const loadDistrictMinimums = useSettingsStore((s) => s.loadDistrictMinimums);
   const districtMinFor = useSettingsStore((s) => s.districtMinFor);
+  const deliveryDistrict = useSettingsStore((s) => s.deliveryDistrict);
 
   const [form, setForm] = useState({
     customerName: profile.name || '',
@@ -56,6 +57,11 @@ export default function CheckoutPage() {
   const shortAmount = belowMin ? districtMin - subtotal : 0;
 
   useEffect(() => { loadDistrictMinimums(); }, [loadDistrictMinimums]);
+
+  // Pre-fill the district from the location detected on entry (if not set yet).
+  useEffect(() => {
+    if (!form.district && deliveryDistrict) setForm((f) => ({ ...f, district: deliveryDistrict }));
+  }, [deliveryDistrict]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-pick the district when its name appears in the typed/geocoded address
   // (only while none is chosen yet, so a manual choice is never overridden).

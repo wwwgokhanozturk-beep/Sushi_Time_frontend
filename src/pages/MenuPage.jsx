@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useMenuStore } from '../store/menuStore';
 import SushiCard from '../components/SushiCard';
 import CategoryChip from '../components/CategoryChip';
+import DeliveryMinBanner from '../components/DeliveryMinBanner';
 import useIsMobile from '../hooks/useIsMobile';
 import { categoryLabel } from '../utils/categories';
 
@@ -145,6 +146,8 @@ export default function MenuPage() {
             <button style={styles.clearSearch} onClick={() => setSearch('')}>✕</button>
           )}
         </div>
+
+        <DeliveryMinBanner />
       </div>
 
       {/* Sticky category bar */}

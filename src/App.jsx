@@ -20,10 +20,15 @@ import CartBar from './components/CartBar';
 
 export default function App() {
   const loadBusinessHours = useSettingsStore((s) => s.loadBusinessHours);
+  const loadDistrictMinimums = useSettingsStore((s) => s.loadDistrictMinimums);
+  const requestLocation = useSettingsStore((s) => s.requestLocation);
 
   useEffect(() => {
     loadBusinessHours();
-  }, [loadBusinessHours]);
+    loadDistrictMinimums();
+    // Ask for location right away so we can show the delivery minimum early.
+    requestLocation();
+  }, [loadBusinessHours, loadDistrictMinimums, requestLocation]);
 
   return (
     <BrowserRouter>

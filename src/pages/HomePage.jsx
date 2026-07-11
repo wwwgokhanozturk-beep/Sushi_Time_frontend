@@ -5,6 +5,7 @@ import { useMenuStore } from '../store/menuStore';
 import BannerCarousel from '../components/BannerCarousel';
 import SushiCard from '../components/SushiCard';
 import CategoryChip from '../components/CategoryChip';
+import DeliveryMinBanner from '../components/DeliveryMinBanner';
 import useIsMobile from '../hooks/useIsMobile';
 import { categoryLabel } from '../utils/categories';
 
@@ -153,6 +154,8 @@ export default function HomePage() {
             <button style={styles.clearSearch} onClick={() => setSearch('')}>✕</button>
           )}
         </div>
+
+        <DeliveryMinBanner />
       </div>
 
       {/* Sticky category bar (becomes sticky once the hero scrolls past) */}

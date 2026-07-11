@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import httpClient from '../api/httpClient';
 import { computeOpenState } from '../utils/businessHours';
+import { MAPBOX_TOKEN } from '../theme';
 
 // Глобальные настройки сайта (контактный номер и т.п.)
 export const useSettingsStore = create((set, get) => ({
@@ -72,6 +73,40 @@ export const useSettingsStore = create((set, get) => ({
     if (!name) return 0;
     const d = get().districts.find((x) => x.name === name);
     return d ? Number(d.minOrder) || 0 : 0;
+  },
+
+  // Геолокация клиента → район доставки (чтобы показать минимум ещё до корзины)
+  deliveryDistrict: '',
+  deliveryLat: null,
+  deliveryLng: null,
+  locationAsked: false,
+  setDeliveryDistrict: (name) => set({ deliveryDistrict: name || '' }),
+
+  // Спрашиваем геолокацию один раз при входе. При согласии — обратное
+  // геокодирование определяет район Алании. Отказ — не проблема (тихо игнорим).
+  requestLocation: async () => {
+    if (get().locationAsked) return;
+    set({ locationAsked: true });
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    await get().loadDistrictMinimums();
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        set({ deliveryLat: latitude, deliveryLng: longitude });
+        if (!MAPBOX_TOKEN) return;
+        try {
+          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json` +
+            `?access_token=${MAPBOX_TOKEN}&language=tr&limit=1`;
+          const res = await fetch(url);
+          const data = await res.json();
+          const name = (data?.features?.[0]?.place_name || '').toLowerCase();
+          const hit = get().districts.find((d) => name.includes(d.name.toLowerCase()));
+          if (hit) set({ deliveryDistrict: hit.name });
+        } catch { /* geocoding failed — no problem */ }
+      },
+      () => { /* permission denied — no problem */ },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
   },
 
   // Открыт ли ресторан сейчас (по часовому поясу заведения). До загрузки — открыт.

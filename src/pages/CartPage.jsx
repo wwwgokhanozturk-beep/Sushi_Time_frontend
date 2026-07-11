@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore, selectTotalPrice } from '../store/cartStore';
 import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, SERVICE_FEE } from '../theme';
+import DeliveryMinBanner from '../components/DeliveryMinBanner';
 import useIsMobile from '../hooks/useIsMobile';
 
 export default function CartPage() {
@@ -65,6 +66,8 @@ export default function CartPage() {
           {/* Summary */}
           <div style={styles.summary}>
             <div style={styles.summaryTitle}>{t('order_summary')}</div>
+
+            <DeliveryMinBanner />
 
             {freeDeliveryLeft > 0 && (
               <div style={styles.freeHint}>

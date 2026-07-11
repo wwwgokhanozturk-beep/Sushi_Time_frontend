@@ -53,6 +53,27 @@ export const useSettingsStore = create((set, get) => ({
     }
   },
 
+  // Минимальная сумма заказа по районам Алании (задаётся в админке)
+  districts: [],            // [{ name, minOrder }]
+  districtsLoaded: false,
+
+  loadDistrictMinimums: async () => {
+    if (get().districtsLoaded) return;
+    try {
+      const res = await httpClient.get('/settings/district-minimums');
+      set({ districts: res.data?.data?.districts || [], districtsLoaded: true });
+    } catch {
+      set({ districtsLoaded: true });
+    }
+  },
+
+  // Минимум для района (0 = без минимума)
+  districtMinFor: (name) => {
+    if (!name) return 0;
+    const d = get().districts.find((x) => x.name === name);
+    return d ? Number(d.minOrder) || 0 : 0;
+  },
+
   // Открыт ли ресторан сейчас (по часовому поясу заведения). До загрузки — открыт.
   isOpenNow: () => {
     const bh = get().businessHours;

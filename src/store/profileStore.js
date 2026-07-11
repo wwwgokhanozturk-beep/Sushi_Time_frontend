@@ -9,7 +9,7 @@ const load = () => {
 };
 const save = (data) => localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
-const defaults = { name: '', phone: '', address: '', buildingName: '', floor: '', apartment: '', doorCode: '', notes: '', latitude: null, longitude: null, email: '', token: null, refreshToken: null, userId: null, isLoggedIn: false, isGuest: false };
+const defaults = { name: '', phone: '', address: '', district: '', buildingName: '', floor: '', apartment: '', doorCode: '', notes: '', latitude: null, longitude: null, email: '', token: null, refreshToken: null, userId: null, isLoggedIn: false, isGuest: false };
 
 export const useProfileStore = create((set, get) => ({
   ...defaults,
@@ -22,6 +22,7 @@ export const useProfileStore = create((set, get) => ({
       name: fields.name ?? s.name,
       phone: fields.phone ?? s.phone,
       address: fields.address ?? s.address,
+      district: fields.district ?? s.district,
       buildingName: fields.buildingName ?? s.buildingName,
       floor: fields.floor ?? s.floor,
       apartment: fields.apartment ?? s.apartment,

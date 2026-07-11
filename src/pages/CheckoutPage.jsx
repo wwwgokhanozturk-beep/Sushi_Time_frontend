@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore, selectTotalPrice } from '../store/cartStore';
@@ -20,11 +20,15 @@ export default function CheckoutPage() {
   const profile = useProfileStore();
   const isOpenNow = useSettingsStore((s) => s.isOpenNow);
   const open = isOpenNow();
+  const districts = useSettingsStore((s) => s.districts);
+  const loadDistrictMinimums = useSettingsStore((s) => s.loadDistrictMinimums);
+  const districtMinFor = useSettingsStore((s) => s.districtMinFor);
 
   const [form, setForm] = useState({
     customerName: profile.name || '',
     phone: profile.phone || '',
     address: profile.address || '',
+    district: profile.district || '',
     buildingName: profile.buildingName || '',
     floor: profile.floor || '',
     apartment: profile.apartment || '',
@@ -45,6 +49,22 @@ export default function CheckoutPage() {
 
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   const total = subtotal - promoDiscount + deliveryFee + SERVICE_FEE + tip;
+
+  // Per-district minimum order (food subtotal, matching the server check).
+  const districtMin = districtMinFor(form.district);
+  const belowMin = districtMin > 0 && subtotal < districtMin;
+  const shortAmount = belowMin ? districtMin - subtotal : 0;
+
+  useEffect(() => { loadDistrictMinimums(); }, [loadDistrictMinimums]);
+
+  // Auto-pick the district when its name appears in the typed/geocoded address
+  // (only while none is chosen yet, so a manual choice is never overridden).
+  useEffect(() => {
+    if (form.district || !districts.length || !form.address) return;
+    const addr = form.address.toLowerCase();
+    const hit = districts.find((d) => addr.includes(d.name.toLowerCase()));
+    if (hit) setForm((f) => ({ ...f, district: hit.name }));
+  }, [form.address, districts, form.district]);
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -72,6 +92,7 @@ export default function CheckoutPage() {
     if (!form.customerName.trim()) e.customerName = t('name_required');
     if (!form.phone.trim()) e.phone = t('phone_required');
     if (!form.address.trim()) e.address = t('address_required');
+    if (!form.district) e.district = t('district_required');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -79,6 +100,7 @@ export default function CheckoutPage() {
   const handleSubmit = async () => {
     if (!validate()) return;
     if (!open) return; // ресторан закрыт — сервер всё равно отклонит
+    if (belowMin) return; // район не набрал минимум — сервер тоже отклонит
     const payload = {
       ...form,
       items: items.map(({ menuItem, quantity }) => ({ menuItemId: menuItem._id, quantity })),
@@ -95,6 +117,7 @@ export default function CheckoutPage() {
         name: form.customerName,
         phone: form.phone,
         address: form.address,
+        district: form.district,
         buildingName: form.buildingName,
         floor: form.floor,
         apartment: form.apartment,
@@ -126,6 +149,25 @@ export default function CheckoutPage() {
               <Field label={t('full_name')} value={form.customerName} onChange={set('customerName')} error={errors.customerName} />
               <Field label={t('phone_number')} value={form.phone} onChange={set('phone')} error={errors.phone} type="tel" placeholder="+90 555 000 0000" />
               <Field label={t('delivery_address')} value={form.address} onChange={set('address')} error={errors.address} />
+
+              {/* District (bölge) — required; drives the per-district minimum */}
+              <div style={fStyles.wrap}>
+                <label style={fStyles.label}>{t('district')}</label>
+                <select
+                  style={{ ...fStyles.input, ...(errors.district ? fStyles.inputError : {}) }}
+                  value={form.district}
+                  onChange={(e) => setForm((f) => ({ ...f, district: e.target.value }))}
+                >
+                  <option value="">{t('select_district')}</option>
+                  {districts.map((d) => (
+                    <option key={d.name} value={d.name}>
+                      {d.name}{d.minOrder > 0 ? ` — min ${d.minOrder} ₺` : ''}
+                    </option>
+                  ))}
+                </select>
+                {errors.district && <div style={fStyles.error}>{errors.district}</div>}
+              </div>
+
               <div style={fStyles.wrap}>
                 <label style={fStyles.label}>{t('delivery_location')}</label>
                 <MapboxMap
@@ -224,12 +266,18 @@ export default function CheckoutPage() {
               </div>
             )}
 
+            {open && belowMin && (
+              <div style={styles.minBanner}>
+                ⚠️ {t('district_min_notice', { district: form.district, min: districtMin, short: shortAmount.toFixed(0) })}
+              </div>
+            )}
+
             <button
-              style={{ ...styles.placeBtn, opacity: (loading || !open) ? 0.55 : 1, cursor: (loading || !open) ? 'not-allowed' : 'pointer' }}
+              style={{ ...styles.placeBtn, opacity: (loading || !open || belowMin) ? 0.55 : 1, cursor: (loading || !open || belowMin) ? 'not-allowed' : 'pointer' }}
               onClick={handleSubmit}
-              disabled={loading || !open}
+              disabled={loading || !open || belowMin}
             >
-              {loading ? '...' : (open ? t('place_order') : t('closed_title'))}
+              {loading ? '...' : (!open ? t('closed_title') : belowMin ? t('district_min_short', { short: shortAmount.toFixed(0) }) : t('place_order'))}
             </button>
           </div>
         </div>
@@ -299,4 +347,5 @@ const styles = {
   divider: { height: 1, background: 'var(--divider)' },
   placeBtn: { width: '100%', padding: '14px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 'var(--radius-full)', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: 'var(--shadow-glow)' },
   closedBanner: { padding: '10px 14px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, textAlign: 'center' },
+  minBanner: { padding: '10px 14px', background: '#FFF4E5', color: '#B45309', border: '1px solid #FCD9A8', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, textAlign: 'center' },
 };

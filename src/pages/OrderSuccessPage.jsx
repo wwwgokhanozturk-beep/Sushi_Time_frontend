@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useSettingsStore } from '../store/settingsStore';
 
 export default function OrderSuccessPage() {
   const { t } = useTranslation();
@@ -8,10 +9,14 @@ export default function OrderSuccessPage() {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
   const order = state?.order;
+  const { orderTimerMinutes, loadOrderTimer } = useSettingsStore();
 
   useEffect(() => {
     if (!order) { navigate('/'); return; }
+    loadOrderTimer();
     setTimeout(() => setVisible(true), 50);
+    const redirect = setTimeout(() => navigate(`/orders/${order._id}`, { replace: true }), 2500);
+    return () => clearTimeout(redirect);
   }, []);
 
   if (!order) return null;
@@ -34,7 +39,7 @@ export default function OrderSuccessPage() {
 
         <div style={styles.etaCard}>
           <div style={styles.etaLabel}>{t('estimated_delivery')}</div>
-          <div style={styles.etaTime}>25 – 35 min</div>
+          <div style={styles.etaTime}>~{orderTimerMinutes} min</div>
         </div>
 
         <div style={styles.btnGroup}>

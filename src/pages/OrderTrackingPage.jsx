@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrderStore } from '../store/orderStore';
+import { useSettingsStore } from '../store/settingsStore';
 import StatusBadge from '../components/StatusBadge';
 
 const STEPS = [
@@ -19,12 +20,24 @@ export default function OrderTrackingPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { currentOrder: order, loading, loadOrderById } = useOrderStore();
+  const { orderTimerMinutes, loadOrderTimer } = useSettingsStore();
+  const [remainingMs, setRemainingMs] = useState(null);
 
   useEffect(() => {
     loadOrderById(id);
+    loadOrderTimer();
     const interval = setInterval(() => loadOrderById(id), 15000);
     return () => clearInterval(interval);
   }, [id]);
+
+  useEffect(() => {
+    if (!order?.createdAt) return;
+    const endTime = new Date(order.createdAt).getTime() + orderTimerMinutes * 60000;
+    const tick = () => setRemainingMs(Math.max(0, endTime - Date.now()));
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [order?.createdAt, orderTimerMinutes]);
 
   if (loading && !order) {
     return (
@@ -52,6 +65,18 @@ export default function OrderTrackingPage() {
           </div>
           <StatusBadge status={order.status} />
         </div>
+
+        {/* Countdown timer */}
+        {!isCancelled && order.status !== 'delivered' && remainingMs != null && (
+          <div style={styles.timerCard}>
+            <div style={styles.timerLabel}>{t('time_remaining')}</div>
+            <div style={styles.timerValue}>
+              {String(Math.floor(remainingMs / 60000)).padStart(2, '0')}:
+              {String(Math.floor((remainingMs % 60000) / 1000)).padStart(2, '0')}
+            </div>
+            {remainingMs === 0 && <div style={styles.timerDone}>{t('order_ready_soon')}</div>}
+          </div>
+        )}
 
         {/* Stepper */}
         {!isCancelled ? (
@@ -128,6 +153,10 @@ const styles = {
   header: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' },
   title: { fontSize: 26, fontWeight: 900, color: 'var(--text-primary)' },
   orderId: { fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', fontFamily: 'monospace', marginTop: 2 },
+  timerCard: { background: 'var(--primary)', borderRadius: 'var(--radius-xl)', padding: '20px 24px', boxShadow: 'var(--shadow-glow)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 },
+  timerLabel: { fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase', letterSpacing: 1 },
+  timerValue: { fontSize: 40, fontWeight: 900, color: '#fff', fontVariantNumeric: 'tabular-nums' },
+  timerDone: { fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.9)' },
   stepper: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '24px', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column' },
   stepRow: { display: 'flex', flexDirection: 'column' },
   line: { width: 2, height: 28, background: 'var(--divider)', margin: '0 0 0 22px', borderRadius: 1 },

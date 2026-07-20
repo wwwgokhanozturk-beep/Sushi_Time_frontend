@@ -109,6 +109,22 @@ export const useSettingsStore = create((set, get) => ({
     );
   },
 
+  // Длительность таймера заказа (мин.), задаётся в админке — для страницы отслеживания
+  orderTimerMinutes: 40,
+  orderTimerLoaded: false,
+
+  loadOrderTimer: async () => {
+    if (get().orderTimerLoaded) return;
+    set({ orderTimerLoaded: true });
+    try {
+      const res = await httpClient.get('/settings/order-timer');
+      const minutes = Number(res.data?.data?.orderTimer?.minutes);
+      set({ orderTimerMinutes: minutes > 0 ? minutes : 40 });
+    } catch {
+      /* оставляем дефолт 40 мин */
+    }
+  },
+
   // Открыт ли ресторан сейчас (по часовому поясу заведения). До загрузки — открыт.
   isOpenNow: () => {
     const bh = get().businessHours;

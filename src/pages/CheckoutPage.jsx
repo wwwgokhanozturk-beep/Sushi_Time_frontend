@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore, selectTotalPrice } from '../store/cartStore';
@@ -47,6 +47,7 @@ export default function CheckoutPage() {
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoMsg, setPromoMsg] = useState('');
   const [errors, setErrors] = useState({});
+  const orderPlacedRef = useRef(false);
 
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   const total = subtotal - promoDiscount + deliveryFee + SERVICE_FEE + tip;
@@ -118,6 +119,9 @@ export default function CheckoutPage() {
     };
     const order = await placeOrder(payload);
     if (order) {
+      // Prevents the empty-cart guard below from redirecting to /cart on the
+      // re-render that clearCart() triggers, racing the navigate() below.
+      orderPlacedRef.current = true;
       // Remember the delivery details so the next order is pre-filled.
       profile.updateProfile({
         name: form.customerName,
@@ -136,7 +140,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!items.length) {
+  if (!items.length && !orderPlacedRef.current) {
     navigate('/cart');
     return null;
   }

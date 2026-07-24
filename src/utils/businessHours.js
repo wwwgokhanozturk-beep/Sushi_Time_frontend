@@ -64,3 +64,40 @@ export function computeOpenState(value, date = new Date()) {
 
   return { enabled: true, open, date: todayStr, weekday, today, reason: open ? 'open' : 'closed' };
 }
+
+// Upcoming `days` days (starting today) that the restaurant is open, for the
+// pre-order picker shown when it's currently closed. Each entry:
+// { date: 'YYYY-MM-DD', weekday, open: 'HH:MM', close: 'HH:MM' }.
+// Skips days off and holidays. Overnight schedules (close < open) are kept
+// as-is — the time-slot picker only offers times up to 23:30 for those.
+export function getUpcomingOpenDays(value, days = 7, from = new Date()) {
+  const week = Array.isArray(value?.week) && value.week.length === 7 ? value.week : emptyWeek();
+  const holidays = Array.isArray(value?.holidays) ? value.holidays : [];
+  const result = [];
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(from);
+    d.setDate(d.getDate() + i);
+    const { weekday, date } = zonedParts(d);
+    const today = week[weekday];
+    if (!today || today.closed || holidays.includes(date)) continue;
+    if (!TIME_RE.test(today.open) || !TIME_RE.test(today.close) || today.open === today.close) continue;
+    result.push({ date, weekday, open: today.open, close: today.close });
+  }
+
+  return result;
+}
+
+// Half-hour time slots between `open` and `close` (exclusive of close),
+// e.g. ('10:00','12:00') -> ['10:00','10:30','11:00','11:30'].
+export function getTimeSlots(open, close) {
+  const openMin = toMinutes(open);
+  const closeMin = toMinutes(close) > openMin ? toMinutes(close) : 24 * 60; // overnight: cap at day end
+  const slots = [];
+  for (let m = openMin; m < closeMin; m += 30) {
+    const h = String(Math.floor(m / 60)).padStart(2, '0');
+    const mm = String(m % 60).padStart(2, '0');
+    slots.push(`${h}:${mm}`);
+  }
+  return slots;
+}

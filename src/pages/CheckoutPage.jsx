@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore, selectTotalPrice } from '../store/cartStore';
@@ -9,6 +9,7 @@ import httpClient from '../api/httpClient';
 import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, SERVICE_FEE, TIP_OPTIONS } from '../theme';
 import useIsMobile from '../hooks/useIsMobile';
 import MapboxMap from '../components/MapboxMap';
+import { getUpcomingOpenDays, getTimeSlots } from '../utils/businessHours';
 
 export default function CheckoutPage() {
   const { t } = useTranslation();
@@ -20,6 +21,11 @@ export default function CheckoutPage() {
   const profile = useProfileStore();
   const isOpenNow = useSettingsStore((s) => s.isOpenNow);
   const open = isOpenNow();
+  const businessHours = useSettingsStore((s) => s.businessHours);
+  const upcomingOpenDays = useMemo(
+    () => (open ? [] : getUpcomingOpenDays(businessHours, 7)),
+    [open, businessHours]
+  );
   const districts = useSettingsStore((s) => s.districts);
   const loadDistrictMinimums = useSettingsStore((s) => s.loadDistrictMinimums);
   const districtMinFor = useSettingsStore((s) => s.districtMinFor);
@@ -47,7 +53,21 @@ export default function CheckoutPage() {
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [promoMsg, setPromoMsg] = useState('');
   const [errors, setErrors] = useState({});
+  const [preorderDate, setPreorderDate] = useState('');
+  const [preorderTime, setPreorderTime] = useState('');
   const orderPlacedRef = useRef(false);
+
+  // Reset the picked slot if the day list changes (e.g. hours reload) and the
+  // previously selected date is no longer among the open days.
+  useEffect(() => {
+    if (preorderDate && !upcomingOpenDays.some((d) => d.date === preorderDate)) {
+      setPreorderDate('');
+      setPreorderTime('');
+    }
+  }, [upcomingOpenDays]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const preorderDay = upcomingOpenDays.find((d) => d.date === preorderDate);
+  const preorderTimeSlots = preorderDay ? getTimeSlots(preorderDay.open, preorderDay.close) : [];
 
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   const total = subtotal - promoDiscount + deliveryFee + SERVICE_FEE + tip;
@@ -106,7 +126,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    if (!open) return; // ресторан закрыт — сервер всё равно отклонит
+    if (!open && !(preorderDate && preorderTime)) return; // ждём выбор слота предзаказа
     if (belowMin) return; // район не набрал минимум — сервер тоже отклонит
     const payload = {
       ...form,
@@ -116,6 +136,10 @@ export default function CheckoutPage() {
       promoCode: promoCode.toUpperCase(),
       ...(geo ? { latitude: geo.lat, longitude: geo.lng } : {}),
       ...(profile.userId ? { user: profile.userId } : {}),
+      // +03:00 — Turkey is a single timezone with no DST since 2016 (see
+      // utils/businessHours.js), so this is unambiguous regardless of the
+      // customer's or server's own local timezone.
+      ...(!open ? { scheduledFor: `${preorderDate}T${preorderTime}:00+03:00` } : {}),
     };
     const order = await placeOrder(payload);
     if (order) {
@@ -272,7 +296,43 @@ export default function CheckoutPage() {
 
             {!open && (
               <div style={styles.closedBanner}>
-                🌙 {t('closed_order_blocked')}
+                <div>🌙 {t('closed_preorder_notice')}</div>
+
+                {upcomingOpenDays.length > 0 && (
+                  <div style={styles.preorderPicker}>
+                    <div style={fStyles.wrap}>
+                      <label style={fStyles.label}>{t('preorder_day')}</label>
+                      <select
+                        style={fStyles.input}
+                        value={preorderDate}
+                        onChange={(e) => { setPreorderDate(e.target.value); setPreorderTime(''); }}
+                      >
+                        <option value="">{t('preorder_select_day')}</option>
+                        {upcomingOpenDays.map((d) => (
+                          <option key={d.date} value={d.date}>
+                            {dayLabel(d.date)} · {d.open}–{d.close}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {preorderDay && (
+                      <div style={fStyles.wrap}>
+                        <label style={fStyles.label}>{t('preorder_time')}</label>
+                        <select
+                          style={fStyles.input}
+                          value={preorderTime}
+                          onChange={(e) => setPreorderTime(e.target.value)}
+                        >
+                          <option value="">{t('preorder_select_time')}</option>
+                          {preorderTimeSlots.map((tm) => (
+                            <option key={tm} value={tm}>{tm}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -282,18 +342,43 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            <button
-              style={{ ...styles.placeBtn, opacity: (loading || !open || belowMin) ? 0.55 : 1, cursor: (loading || !open || belowMin) ? 'not-allowed' : 'pointer' }}
-              onClick={handleSubmit}
-              disabled={loading || !open || belowMin}
-            >
-              {loading ? '...' : (!open ? t('closed_title') : belowMin ? t('district_min_short', { short: shortAmount.toFixed(0) }) : t('place_order'))}
-            </button>
+            {(() => {
+              const preorderReady = open || (preorderDate && preorderTime);
+              const disabled = loading || !preorderReady || belowMin;
+              const label = loading
+                ? '...'
+                : !open
+                ? (preorderReady ? t('place_preorder') : t('preorder_pick_slot'))
+                : belowMin
+                ? t('district_min_short', { short: shortAmount.toFixed(0) })
+                : t('place_order');
+              return (
+                <button
+                  style={{ ...styles.placeBtn, opacity: disabled ? 0.55 : 1, cursor: disabled ? 'not-allowed' : 'pointer' }}
+                  onClick={handleSubmit}
+                  disabled={disabled}
+                >
+                  {label}
+                </button>
+              );
+            })()}
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+// 'YYYY-MM-DD' -> "Bugün" / "Yarın" / "Cum, 25 Tem" (Istanbul-day boundaries,
+// matching how the day list itself was built).
+function dayLabel(dateStr) {
+  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(new Date());
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const tomorrowStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Istanbul' }).format(tomorrow);
+  if (dateStr === todayStr) return 'Bugün';
+  if (dateStr === tomorrowStr) return 'Yarın';
+  const d = new Date(`${dateStr}T12:00:00+03:00`);
+  return new Intl.DateTimeFormat('tr-TR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Europe/Istanbul' }).format(d);
 }
 
 function Field({ label, value, onChange, error, type = 'text', placeholder, multiline }) {
@@ -356,6 +441,7 @@ const styles = {
   summaryRows: { display: 'flex', flexDirection: 'column', gap: 8 },
   divider: { height: 1, background: 'var(--divider)' },
   placeBtn: { width: '100%', padding: '14px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 'var(--radius-full)', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: 'var(--shadow-glow)' },
-  closedBanner: { padding: '10px 14px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, textAlign: 'center' },
+  closedBanner: { padding: '10px 14px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 10 },
+  preorderPicker: { display: 'flex', flexDirection: 'column', gap: 8, textAlign: 'left' },
   minBanner: { padding: '10px 14px', background: '#FFF4E5', color: '#B45309', border: '1px solid #FCD9A8', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, textAlign: 'center' },
 };

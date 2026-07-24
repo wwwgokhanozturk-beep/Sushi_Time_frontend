@@ -38,8 +38,12 @@ export default function OrderSuccessPage() {
         <div style={styles.desc}>{t('order_success_desc')}</div>
 
         <div style={styles.etaCard}>
-          <div style={styles.etaLabel}>{t('estimated_delivery')}</div>
-          <div style={styles.etaTime}>~{orderTimerMinutes} min</div>
+          <div style={styles.etaLabel}>{order.scheduledFor ? t('preorder_for') : t('estimated_delivery')}</div>
+          <div style={styles.etaTime}>
+            {order.scheduledFor
+              ? new Date(order.scheduledFor).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
+              : `~${orderTimerMinutes} min`}
+          </div>
         </div>
 
         <div style={styles.btnGroup}>

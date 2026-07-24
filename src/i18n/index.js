@@ -60,6 +60,10 @@ const en = {
   closed_title: "We're currently closed", closed_subtitle: 'Online ordering is unavailable right now. You can still browse our menu.',
   closed_today_hours: "Today's hours", closed_today_off: 'Closed today', view_menu: 'View menu',
   closed_order_blocked: "We're closed right now — ordering is unavailable",
+  closed_preorder_notice: "We're closed right now — place a pre-order for when we reopen",
+  preorder_day: 'Day', preorder_select_day: 'Select a day',
+  preorder_time: 'Time', preorder_select_time: 'Select a time',
+  place_preorder: 'Place pre-order', preorder_pick_slot: 'Choose a day and time', preorder_for: 'Pre-ordered for',
 };
 
 const ru = {
@@ -120,6 +124,10 @@ const ru = {
   closed_title: 'Сейчас мы закрыты', closed_subtitle: 'Онлайн-заказы временно недоступны. Но вы можете посмотреть меню.',
   closed_today_hours: 'Часы работы сегодня', closed_today_off: 'Сегодня выходной', view_menu: 'Посмотреть меню',
   closed_order_blocked: 'Сейчас закрыто — оформление заказа недоступно',
+  closed_preorder_notice: 'Сейчас мы закрыты — оформите предзаказ на время открытия',
+  preorder_day: 'День', preorder_select_day: 'Выберите день',
+  preorder_time: 'Время', preorder_select_time: 'Выберите время',
+  place_preorder: 'Оформить предзаказ', preorder_pick_slot: 'Выберите день и время', preorder_for: 'Предзаказ на',
 };
 
 const tr = {
@@ -180,6 +188,10 @@ const tr = {
   closed_title: 'Şu anda kapalıyız', closed_subtitle: 'Çevrimiçi sipariş şu an kapalı. Yine de menümüze göz atabilirsiniz.',
   closed_today_hours: 'Bugünkü çalışma saatleri', closed_today_off: 'Bugün kapalıyız', view_menu: 'Menüye göz at',
   closed_order_blocked: 'Şu anda kapalıyız — sipariş alınamıyor',
+  closed_preorder_notice: 'Şu anda kapalıyız — açılış saatimize ön sipariş verebilirsiniz',
+  preorder_day: 'Gün', preorder_select_day: 'Bir gün seçin',
+  preorder_time: 'Saat', preorder_select_time: 'Bir saat seçin',
+  place_preorder: 'Ön sipariş ver', preorder_pick_slot: 'Gün ve saat seçin', preorder_for: 'Ön sipariş zamanı',
 };
 
 const savedLang = localStorage.getItem('sushi_lang') || 'en';

@@ -32,12 +32,14 @@ export default function OrderTrackingPage() {
 
   useEffect(() => {
     if (!order?.createdAt) return;
-    const endTime = new Date(order.createdAt).getTime() + orderTimerMinutes * 60000;
+    // Pre-orders (scheduledFor) count down to the chosen slot, not from placement time.
+    const baseTime = order.scheduledFor ? new Date(order.scheduledFor).getTime() : new Date(order.createdAt).getTime();
+    const endTime = order.scheduledFor ? baseTime : baseTime + orderTimerMinutes * 60000;
     const tick = () => setRemainingMs(Math.max(0, endTime - Date.now()));
     tick();
     const timer = setInterval(tick, 1000);
     return () => clearInterval(timer);
-  }, [order?.createdAt, orderTimerMinutes]);
+  }, [order?.createdAt, order?.scheduledFor, orderTimerMinutes]);
 
   if (loading && !order) {
     return (
@@ -66,13 +68,16 @@ export default function OrderTrackingPage() {
           <StatusBadge status={order.status} />
         </div>
 
-        {/* Countdown timer */}
+        {/* Countdown timer — mm:ss normally, or d/h for a far-future pre-order */}
         {!isCancelled && order.status !== 'delivered' && remainingMs != null && (
           <div style={styles.timerCard}>
-            <div style={styles.timerLabel}>{t('time_remaining')}</div>
+            <div style={styles.timerLabel}>{order.scheduledFor ? t('preorder_for') : t('time_remaining')}</div>
             <div style={styles.timerValue}>
-              {String(Math.floor(remainingMs / 60000)).padStart(2, '0')}:
-              {String(Math.floor((remainingMs % 60000) / 1000)).padStart(2, '0')}
+              {remainingMs >= 24 * 60 * 60000
+                ? `${Math.floor(remainingMs / (24 * 60 * 60000))}g ${Math.floor((remainingMs / 3600000) % 24)}s`
+                : remainingMs >= 3600000
+                ? `${String(Math.floor(remainingMs / 3600000)).padStart(2, '0')}:${String(Math.floor((remainingMs % 3600000) / 60000)).padStart(2, '0')}`
+                : `${String(Math.floor(remainingMs / 60000)).padStart(2, '0')}:${String(Math.floor((remainingMs % 60000) / 1000)).padStart(2, '0')}`}
             </div>
             {remainingMs === 0 && <div style={styles.timerDone}>{t('order_ready_soon')}</div>}
           </div>

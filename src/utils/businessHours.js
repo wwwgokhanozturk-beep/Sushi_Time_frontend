@@ -65,29 +65,6 @@ export function computeOpenState(value, date = new Date()) {
   return { enabled: true, open, date: todayStr, weekday, today, reason: open ? 'open' : 'closed' };
 }
 
-// Upcoming `days` days (starting today) that the restaurant is open, for the
-// pre-order picker shown when it's currently closed. Each entry:
-// { date: 'YYYY-MM-DD', weekday, open: 'HH:MM', close: 'HH:MM' }.
-// Skips days off and holidays. Overnight schedules (close < open) are kept
-// as-is — the time-slot picker only offers times up to 23:30 for those.
-export function getUpcomingOpenDays(value, days = 7, from = new Date()) {
-  const week = Array.isArray(value?.week) && value.week.length === 7 ? value.week : emptyWeek();
-  const holidays = Array.isArray(value?.holidays) ? value.holidays : [];
-  const result = [];
-
-  for (let i = 0; i < days; i++) {
-    const d = new Date(from);
-    d.setDate(d.getDate() + i);
-    const { weekday, date } = zonedParts(d);
-    const today = week[weekday];
-    if (!today || today.closed || holidays.includes(date)) continue;
-    if (!TIME_RE.test(today.open) || !TIME_RE.test(today.close) || today.open === today.close) continue;
-    result.push({ date, weekday, open: today.open, close: today.close });
-  }
-
-  return result;
-}
-
 // Half-hour time slots between `open` and `close` (exclusive of close),
 // e.g. ('10:00','12:00') -> ['10:00','10:30','11:00','11:30'].
 export function getTimeSlots(open, close) {
@@ -100,4 +77,41 @@ export function getTimeSlots(open, close) {
     slots.push(`${h}:${mm}`);
   }
   return slots;
+}
+
+// Time slots for one { date, open, close } day entry, dropping any slot
+// that has already passed when that day happens to be today — otherwise a
+// customer could pick e.g. today 13:00 after it's already 15:00 and have
+// the server reject it with no obvious reason why.
+export function getAvailableTimeSlots(day, from = new Date()) {
+  if (!day) return [];
+  const slots = getTimeSlots(day.open, day.close);
+  const { date: todayStr, minutes: nowMinutes } = zonedParts(from);
+  if (day.date !== todayStr) return slots;
+  return slots.filter((slot) => toMinutes(slot) > nowMinutes);
+}
+
+// Upcoming `days` days (starting today) that the restaurant is open, for the
+// pre-order picker shown when it's currently closed. Each entry:
+// { date: 'YYYY-MM-DD', weekday, open: 'HH:MM', close: 'HH:MM' }.
+// Skips days off, holidays, and — for today specifically — skips it too
+// once every slot for today has already passed.
+export function getUpcomingOpenDays(value, days = 7, from = new Date()) {
+  const week = Array.isArray(value?.week) && value.week.length === 7 ? value.week : emptyWeek();
+  const holidays = Array.isArray(value?.holidays) ? value.holidays : [];
+  const result = [];
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(from);
+    d.setDate(d.getDate() + i);
+    const { weekday, date } = zonedParts(d);
+    const today = week[weekday];
+    if (!today || today.closed || holidays.includes(date)) continue;
+    if (!TIME_RE.test(today.open) || !TIME_RE.test(today.close) || today.open === today.close) continue;
+    const day = { date, weekday, open: today.open, close: today.close };
+    if (getAvailableTimeSlots(day, from).length === 0) continue;
+    result.push(day);
+  }
+
+  return result;
 }

@@ -9,7 +9,7 @@ import httpClient from '../api/httpClient';
 import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, SERVICE_FEE, TIP_OPTIONS } from '../theme';
 import useIsMobile from '../hooks/useIsMobile';
 import MapboxMap from '../components/MapboxMap';
-import { getUpcomingOpenDays, getTimeSlots } from '../utils/businessHours';
+import { getUpcomingOpenDays, getAvailableTimeSlots } from '../utils/businessHours';
 
 export default function CheckoutPage() {
   const { t } = useTranslation();
@@ -17,7 +17,7 @@ export default function CheckoutPage() {
   const isMobile = useIsMobile();
   const { items, clearCart } = useCartStore();
   const subtotal = useCartStore(selectTotalPrice);
-  const { placeOrder, loading } = useOrderStore();
+  const { placeOrder, loading, error: orderError } = useOrderStore();
   const profile = useProfileStore();
   const isOpenNow = useSettingsStore((s) => s.isOpenNow);
   const open = isOpenNow();
@@ -67,7 +67,7 @@ export default function CheckoutPage() {
   }, [upcomingOpenDays]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const preorderDay = upcomingOpenDays.find((d) => d.date === preorderDate);
-  const preorderTimeSlots = preorderDay ? getTimeSlots(preorderDay.open, preorderDay.close) : [];
+  const preorderTimeSlots = preorderDay ? getAvailableTimeSlots(preorderDay) : [];
 
   const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE;
   const total = subtotal - promoDiscount + deliveryFee + SERVICE_FEE + tip;
@@ -340,6 +340,10 @@ export default function CheckoutPage() {
               <div style={styles.minBanner}>
                 ⚠️ {t('district_min_notice', { district: form.district, min: districtMin, short: shortAmount.toFixed(0) })}
               </div>
+            )}
+
+            {orderError && (
+              <div style={styles.minBanner}>⚠️ {orderError}</div>
             )}
 
             {(() => {

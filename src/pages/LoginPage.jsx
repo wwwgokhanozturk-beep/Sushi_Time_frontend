@@ -22,7 +22,8 @@ export default function LoginPage() {
       const { user, token, refreshToken } = res.data?.data || {};
       if (user && token) {
         setAuth(user, token, refreshToken);
-        navigate('/profile');
+        // Курьеру нужен не профиль, а список его доставок.
+        navigate(user.role === 'driver' ? '/driver' : '/profile');
       }
     } catch {
       setError(t('login_error'));

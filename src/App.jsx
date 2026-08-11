@@ -15,6 +15,7 @@ import OrderTrackingPage from './pages/OrderTrackingPage';
 import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import DriverPage from './pages/DriverPage';
 import ChatWidget from './components/ChatWidget';
 import CartBar from './components/CartBar';
 
@@ -47,6 +48,8 @@ export default function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            {/* Рабочий экран курьера — открывается по прямой ссылке */}
+            <Route path="/driver" element={<DriverPage />} />
             <Route path="*" element={<HomePage />} />
           </Routes>
         </main>

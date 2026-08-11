@@ -1,35 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MAPBOX_TOKEN, RESTAURANT_LAT, RESTAURANT_LNG, Colors } from '../theme';
+import { loadMapboxGL } from '../utils/mapboxLoader';
 
-const MAPBOX_VERSION = '3.7.0';
 const MAP_STYLE = 'mapbox://styles/mapbox/streets-v12';
-
-let loaderPromise = null;
-
-/** Подгружает mapbox-gl с CDN один раз (без npm-зависимости, как и остальная карта проекта). */
-function loadMapboxGL() {
-  if (window.mapboxgl) return Promise.resolve(window.mapboxgl);
-  if (loaderPromise) return loaderPromise;
-
-  loaderPromise = new Promise((resolve, reject) => {
-    const cssId = 'mapbox-gl-css';
-    if (!document.getElementById(cssId)) {
-      const link = document.createElement('link');
-      link.id = cssId;
-      link.rel = 'stylesheet';
-      link.href = `https://api.mapbox.com/mapbox-gl-js/v${MAPBOX_VERSION}/mapbox-gl.css`;
-      document.head.appendChild(link);
-    }
-    const script = document.createElement('script');
-    script.src = `https://api.mapbox.com/mapbox-gl-js/v${MAPBOX_VERSION}/mapbox-gl.js`;
-    script.async = true;
-    script.onload = () => resolve(window.mapboxgl);
-    script.onerror = () => reject(new Error('Mapbox GL failed to load'));
-    document.head.appendChild(script);
-  });
-  return loaderPromise;
-}
 
 /** Красный «фирменный» пин ресторана. */
 function buildRestaurantEl(label) {

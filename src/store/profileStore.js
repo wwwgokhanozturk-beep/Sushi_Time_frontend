@@ -9,7 +9,7 @@ const load = () => {
 };
 const save = (data) => localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
-const defaults = { name: '', phone: '', address: '', district: '', buildingName: '', floor: '', apartment: '', doorCode: '', notes: '', latitude: null, longitude: null, email: '', token: null, refreshToken: null, userId: null, isLoggedIn: false, isGuest: false };
+const defaults = { name: '', phone: '', address: '', district: '', buildingName: '', floor: '', apartment: '', doorCode: '', notes: '', latitude: null, longitude: null, email: '', token: null, refreshToken: null, userId: null, role: 'customer', isLoggedIn: false, isGuest: false };
 
 export const useProfileStore = create((set, get) => ({
   ...defaults,
@@ -37,7 +37,8 @@ export const useProfileStore = create((set, get) => ({
 
   setAuth: (user, token, refreshToken) => {
     const s = get();
-    const patch = { name: user.name || s.name, phone: user.phone || s.phone, email: user.email || '', token, refreshToken, userId: user._id, isLoggedIn: true, isGuest: false };
+    // role нужен, чтобы курьера отправить в его рабочий интерфейс (/driver).
+    const patch = { name: user.name || s.name, phone: user.phone || s.phone, email: user.email || '', token, refreshToken, userId: user._id, role: user.role || 'customer', isLoggedIn: true, isGuest: false };
     set(patch);
     save({ ...get() });
   },

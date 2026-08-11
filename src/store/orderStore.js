@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import httpClient from '../api/httpClient';
+import { saveTrackingToken } from '../utils/trackingTokens';
 
 const STORAGE_KEY = 'sushi_time_order_ids';
 
@@ -25,6 +26,8 @@ export const useOrderStore = create((set) => ({
       const order = res.data?.data?.order;
       set({ loading: false, orderPlaced: order });
       if (order?._id) saveId(order._id);
+      // Ключ к живому отслеживанию — выдаётся один раз, только здесь.
+      if (order?._id && order?.trackingToken) saveTrackingToken(order._id, order.trackingToken);
       return order;
     } catch (e) {
       set({ loading: false, error: e.response?.data?.message || 'Failed to place order' });
@@ -55,7 +58,10 @@ export const useOrderStore = create((set) => ({
         .filter((o) => { if (seen.has(o._id)) return false; seen.add(o._id); return true; })
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      merged.forEach((o) => saveId(o._id));
+      merged.forEach((o) => {
+        saveId(o._id);
+        if (o.trackingToken) saveTrackingToken(o._id, o.trackingToken);
+      });
       set({ orders: merged, loading: false });
     } catch (e) {
       set({ loading: false, error: e.response?.data?.message || 'Failed to load orders' });

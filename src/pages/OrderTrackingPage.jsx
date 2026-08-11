@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useOrderStore } from '../store/orderStore';
 import { useSettingsStore } from '../store/settingsStore';
 import StatusBadge from '../components/StatusBadge';
+import DeliveryTrackingMap from '../components/DeliveryTrackingMap';
+import { useOrderTracking } from '../hooks/useOrderTracking';
 
 const STEPS = [
   { status: 'pending',   icon: '📋', key: 'order_placed' },
@@ -22,6 +24,8 @@ export default function OrderTrackingPage() {
   const { currentOrder: order, loading, loadOrderById } = useOrderStore();
   const { orderTimerMinutes, loadOrderTimer } = useSettingsStore();
   const [remainingMs, setRemainingMs] = useState(null);
+  // Живая позиция курьера + мгновенная смена статуса (быстрее, чем опрос ниже).
+  const { driverLocation, status: liveStatus } = useOrderTracking(id, order);
 
   useEffect(() => {
     loadOrderById(id);
@@ -29,6 +33,11 @@ export default function OrderTrackingPage() {
     const interval = setInterval(() => loadOrderById(id), 15000);
     return () => clearInterval(interval);
   }, [id]);
+
+  // Статус пришёл по сокету — подтягиваем заказ целиком, не дожидаясь опроса.
+  useEffect(() => {
+    if (liveStatus) loadOrderById(id);
+  }, [liveStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!order?.createdAt) return;
@@ -80,6 +89,39 @@ export default function OrderTrackingPage() {
                 : `${String(Math.floor(remainingMs / 60000)).padStart(2, '0')}:${String(Math.floor((remainingMs % 60000) / 1000)).padStart(2, '0')}`}
             </div>
             {remainingMs === 0 && <div style={styles.timerDone}>{t('order_ready_soon')}</div>}
+          </div>
+        )}
+
+        {/* Live courier map — only while the order is actually on the way */}
+        {order.status === 'en_route' && (
+          <div style={styles.trackCard}>
+            <div style={styles.trackHeader}>
+              <span style={styles.detailTitle}>{t('courier_on_the_way')}</span>
+              {driverLocation ? (
+                <span style={styles.liveBadge}>● {t('live')}</span>
+              ) : (
+                <span style={styles.waitingBadge}>{t('waiting_for_courier_signal')}</span>
+              )}
+            </div>
+            <DeliveryTrackingMap
+              driverLocation={driverLocation}
+              deliveryLocation={
+                order.latitude != null && order.longitude != null
+                  ? { lat: order.latitude, lng: order.longitude }
+                  : null
+              }
+              height={260}
+            />
+            {order.driver?.name && (
+              <div style={styles.driverRow}>
+                <span style={styles.driverName}>🛵 {order.driver.name}</span>
+                {order.driver.phone && (
+                  <a href={`tel:${order.driver.phone}`} style={styles.driverCall}>
+                    📞 {t('call')}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -181,6 +223,13 @@ const styles = {
   cancelledText: { fontSize: 16, fontWeight: 600, color: 'var(--error)' },
   detailCard: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '20px', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: 12 },
   detailTitle: { fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' },
+  trackCard: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '20px', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: 12 },
+  trackHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  liveBadge: { fontSize: 12, fontWeight: 800, color: 'var(--success)', letterSpacing: 0.5, textTransform: 'uppercase' },
+  waitingBadge: { fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' },
+  driverRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  driverName: { fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' },
+  driverCall: { fontSize: 14, fontWeight: 700, color: 'var(--primary)', textDecoration: 'none' },
   itemsList: { display: 'flex', flexDirection: 'column', gap: 8 },
   itemRow: { display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--text-secondary)' },
   divider: { height: 1, background: 'var(--divider)' },

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
+import { connectSocket } from '../api/socket';
 import { useProfileStore } from '../store/profileStore';
 import { useLocationSharing } from '../hooks/useLocationSharing';
 import StatusBadge from '../components/StatusBadge';
@@ -18,11 +19,13 @@ export default function DriverPage() {
   const role = useProfileStore((s) => s.role);
   const isLoggedIn = useProfileStore((s) => s.isLoggedIn);
   const name = useProfileStore((s) => s.name);
+  const token = useProfileStore((s) => s.token);
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const { sharing, error, lastSentAt, currentPosition, start, stop } = useLocationSharing();
+  const { sharing, error, lastSentAt, currentPosition, start, stop, updateOrders } =
+    useLocationSharing();
 
   const isDriver = isLoggedIn && role === 'driver';
 
@@ -41,17 +44,44 @@ export default function DriverPage() {
   useEffect(() => {
     if (!isDriver) { setLoading(false); return undefined; }
     loadOrders();
-    // Назначения приходят от админа — подтягиваем список периодически.
+    // Опрос — подстраховка; основные события приходят по сокету ниже.
     const interval = setInterval(loadOrders, 30000);
     return () => clearInterval(interval);
   }, [isDriver, loadOrders]);
 
-  const enRouteOrders = orders.filter((o) => o.status === 'en_route');
-
-  // Заказ ушёл из «в пути» — передавать по нему координаты больше некому.
+  // Назначение заказа и отправка его в путь делаются администратором —
+  // список должен обновиться сразу, а не через полминуты.
   useEffect(() => {
-    if (sharing && enRouteOrders.length === 0) stop();
-  }, [sharing, enRouteOrders.length, stop]);
+    if (!isDriver || !token) return undefined;
+    const socket = connectSocket(token);
+    if (!socket) return undefined;
+
+    const refresh = () => loadOrders();
+    socket.on('driver:assigned', refresh);
+    socket.on('driver:unassigned', refresh);
+    socket.on('driver:order_status', refresh);
+
+    return () => {
+      socket.off('driver:assigned', refresh);
+      socket.off('driver:unassigned', refresh);
+      socket.off('driver:order_status', refresh);
+    };
+  }, [isDriver, token, loadOrders]);
+
+  const enRouteOrders = orders.filter((o) => o.status === 'en_route');
+  const enRouteIds = enRouteOrders.map((o) => o._id).join(',');
+
+  // Курьер включает передачу один раз за смену. Список заказов, по которым
+  // уходят координаты, обновляется на ходу: заказ, отправленный в путь позже,
+  // подхватывается сам, а доставленный — отваливается.
+  useEffect(() => {
+    if (sharing) updateOrders(enRouteIds ? enRouteIds.split(',') : []);
+  }, [sharing, enRouteIds, updateOrders]);
+
+  // Доставок не осталось совсем — держать GPS включённым незачем.
+  useEffect(() => {
+    if (sharing && orders.length === 0) stop();
+  }, [sharing, orders.length, stop]);
 
   const markDelivered = async (orderId) => {
     try {
@@ -89,7 +119,9 @@ export default function DriverPage() {
         <div style={{ ...styles.shareCard, ...(sharing ? styles.shareCardActive : {}) }}>
           {sharing ? (
             <>
-              <div style={styles.shareTitle}>📡 {t('sharing_location')}</div>
+              <div style={styles.shareTitle}>
+                {enRouteOrders.length > 0 ? `📡 ${t('sharing_location')}` : `⏳ ${t('sharing_pending')}`}
+              </div>
               <div style={styles.shareMeta}>
                 {lastSentAt && <span>{t('last_sent')}: {new Date(lastSentAt).toLocaleTimeString()}</span>}
                 {currentPosition && (
@@ -104,10 +136,12 @@ export default function DriverPage() {
           ) : (
             <>
               <div style={styles.shareTitle}>{t('start_delivery')}</div>
-              <div style={styles.shareMeta}>{t('location_permission_needed')}</div>
+              <div style={styles.shareMeta}>
+                {orders.length === 0 ? t('no_deliveries') : t('location_permission_needed')}
+              </div>
               <button
-                style={{ ...styles.startBtn, opacity: enRouteOrders.length === 0 ? 0.5 : 1 }}
-                disabled={enRouteOrders.length === 0}
+                style={{ ...styles.startBtn, opacity: orders.length === 0 ? 0.5 : 1 }}
+                disabled={orders.length === 0}
                 onClick={() => start(enRouteOrders.map((o) => o._id))}
               >
                 ▶ {t('start_delivery')}

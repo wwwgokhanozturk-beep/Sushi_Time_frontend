@@ -56,6 +56,17 @@ export function useLocationSharing() {
     }
   }, []);
 
+  /**
+   * Обновляет набор заказов, по которым уходят координаты, не прерывая
+   * слежение. Нужно, чтобы курьер нажал кнопку один раз: заказ, который
+   * администратор отправит в путь позже, подхватывается сам.
+   */
+  const updateOrders = useCallback((orderIds) => {
+    orderIdsRef.current = (Array.isArray(orderIds) ? orderIds : [orderIds])
+      .filter(Boolean)
+      .map(String);
+  }, []);
+
   const stop = useCallback(() => {
     if (watchIdRef.current != null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
@@ -69,8 +80,9 @@ export function useLocationSharing() {
 
   const start = useCallback(
     async (orderIds) => {
+      // Пустой список — не повод отказывать: курьер включает передачу заранее,
+      // а заказы подхватываются по мере того, как их отправляют в путь.
       const ids = (Array.isArray(orderIds) ? orderIds : [orderIds]).filter(Boolean).map(String);
-      if (ids.length === 0) return;
       if (!navigator.geolocation) {
         setError('geolocation_unsupported');
         return;
@@ -88,6 +100,9 @@ export function useLocationSharing() {
         (pos) => {
           const point = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           setCurrentPosition(point);
+
+          // Заказ ещё не отправили в путь — позицию показываем, но не шлём.
+          if (orderIdsRef.current.length === 0) return;
 
           const now = Date.now();
           const { at, point: prev } = lastSentRef.current;
@@ -130,5 +145,5 @@ export function useLocationSharing() {
   // Уход со страницы не должен оставлять висящий watchPosition.
   useEffect(() => stop, [stop]);
 
-  return { sharing, error, lastSentAt, currentPosition, start, stop };
+  return { sharing, error, lastSentAt, currentPosition, start, stop, updateOrders };
 }

@@ -12,8 +12,11 @@ function buildRestaurantEl(label) {
   const el = document.createElement('div');
   el.style.cssText = 'text-align:center;';
   el.innerHTML = `
-    <img src="/image.png" alt="${label}"
-      style="height:38px;width:auto;display:block;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));" />`;
+    <div style="width:64px;height:64px;border-radius:50%;background:#fff;
+      border:3px solid ${Colors.primary};box-shadow:0 4px 14px rgba(0,0,0,.35);
+      display:flex;align-items:center;justify-content:center;">
+      <img src="/image.png" alt="${label}" style="width:48px;height:auto;display:block;" />
+    </div>`;
   return el;
 }
 
@@ -92,7 +95,7 @@ export default function DeliveryTrackingMap({ driverLocation, deliveryLocation, 
         map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
 
         map.on('load', () => {
-          new mapboxgl.Marker({ element: buildRestaurantEl(t('app_title')), anchor: 'bottom' })
+          new mapboxgl.Marker({ element: buildRestaurantEl(t('app_title')), anchor: 'center' })
             .setLngLat([RESTAURANT_LNG, RESTAURANT_LAT])
             .addTo(map);
           if (!cancelled) setReady(true);

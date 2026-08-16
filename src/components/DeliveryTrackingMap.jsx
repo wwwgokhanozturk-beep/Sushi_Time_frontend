@@ -12,11 +12,8 @@ function buildRestaurantEl(label) {
   const el = document.createElement('div');
   el.style.cssText = 'text-align:center;';
   el.innerHTML = `
-    <div style="width:32px;height:32px;border-radius:50%;background:#fff;
-      border:2px solid ${Colors.primary};box-shadow:0 2px 8px rgba(0,0,0,.35);
-      display:flex;align-items:center;justify-content:center;">
-      <img src="/image.png" alt="${label}" style="width:24px;height:auto;display:block;" />
-    </div>`;
+    <img src="/image.png" alt="${label}"
+      style="height:55px;width:auto;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));" />`;
   return el;
 }
 

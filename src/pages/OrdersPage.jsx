@@ -94,7 +94,7 @@ export default function OrdersPage() {
 }
 
 const styles = {
-  page: { flex: 1, paddingBottom: 80 },
+  page: { flex: 1, paddingBottom: 'var(--page-bottom-space)' },
   container: { maxWidth: 800, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 },
   title: { fontSize: 28, fontWeight: 900, color: 'var(--text-primary)' },
   list: { display: 'flex', flexDirection: 'column', gap: 12 },

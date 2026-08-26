@@ -26,6 +26,17 @@
 
   --navbar-height: 76px;
   --bottom-nav-height: 64px;
+  --cart-bar-height: 56px;
+
+  /* Space every page must leave below its content. Two elements are pinned to
+     the bottom of the viewport: the nav bar, and the floating cart bar that
+     sits 14px above it whenever the cart has items. A page that reserves only
+     the nav height leaves its last control under that cart bar, where taps
+     land on the bar instead — which made "add to cart" unusable on a product
+     page as soon as anything was in the cart. */
+  --page-bottom-space: calc(
+    var(--bottom-nav-height) + var(--cart-bar-height) + 30px + env(safe-area-inset-bottom, 0px)
+  );
 }
 
 *, *::before, *::after {

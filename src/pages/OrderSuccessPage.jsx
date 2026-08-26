@@ -60,7 +60,7 @@ export default function OrderSuccessPage() {
 }
 
 const styles = {
-  page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 80, background: 'var(--background)', minHeight: '60vh' },
+  page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 'var(--page-bottom-space)', background: 'var(--background)', minHeight: '60vh' },
   card: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '40px 32px', maxWidth: 440, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, boxShadow: 'var(--shadow-lg)', textAlign: 'center' },
   iconWrap: { width: 96, height: 96, borderRadius: 999, background: '#E8F5E9', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   icon: { fontSize: 48, color: 'var(--success)', display: 'block', lineHeight: 1 },

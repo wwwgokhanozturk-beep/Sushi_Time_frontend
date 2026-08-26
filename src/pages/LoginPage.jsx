@@ -71,7 +71,7 @@ export default function LoginPage() {
 }
 
 const styles = {
-  page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 80 },
+  page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 'var(--page-bottom-space)' },
   card: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '36px 32px', maxWidth: 420, width: '100%', display: 'flex', flexDirection: 'column', gap: 20, boxShadow: 'var(--shadow-lg)' },
   logoRow: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
   logoImg: { height: 100, width: 'auto', objectFit: 'contain' },

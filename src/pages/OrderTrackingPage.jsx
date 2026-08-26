@@ -194,7 +194,7 @@ export default function OrderTrackingPage() {
 }
 
 const styles = {
-  page: { flex: 1, paddingBottom: 80 },
+  page: { flex: 1, paddingBottom: 'var(--page-bottom-space)' },
   container: { maxWidth: 700, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 },
   backBtn: { alignSelf: 'flex-start', fontSize: 14, fontWeight: 600, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 },
   header: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' },

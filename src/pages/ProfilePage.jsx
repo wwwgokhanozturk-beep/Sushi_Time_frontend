@@ -201,7 +201,7 @@ function QuickLink({ icon, label, to, desc }) {
 }
 
 const styles = {
-  page: { flex: 1, paddingBottom: 80 },
+  page: { flex: 1, paddingBottom: 'var(--page-bottom-space)' },
   container: { maxWidth: 700, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 },
   profileCard: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '24px', display: 'flex', alignItems: 'center', gap: 20, boxShadow: 'var(--shadow-sm)' },
   avatar: { width: 72, height: 72, borderRadius: 999, background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, flexShrink: 0 },

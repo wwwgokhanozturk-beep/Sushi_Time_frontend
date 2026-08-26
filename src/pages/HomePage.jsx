@@ -214,7 +214,7 @@ export default function HomePage() {
 }
 
 const styles = {
-  page: { flex: 1, paddingBottom: 80 },
+  page: { flex: 1, paddingBottom: 'var(--page-bottom-space)' },
   container: { maxWidth: '100%', margin: '0 auto', padding: '20px clamp(16px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: 24, width: '100%' },
   hero: {
     background: 'linear-gradient(135deg, var(--primary) 0%, #ff6b35 100%)',

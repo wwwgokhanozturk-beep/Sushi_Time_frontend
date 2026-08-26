@@ -79,7 +79,7 @@ function Field({ label, value, onChange, type = 'text', placeholder, required })
 }
 
 const styles = {
-  page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 80 },
+  page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 'var(--page-bottom-space)' },
   card: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '16px 32px 32px', maxWidth: 440, width: '100%', display: 'flex', flexDirection: 'column', gap: 20, boxShadow: 'var(--shadow-lg)' },
   // Лого PNG имеет много прозрачного поля сверху/снизу — поджимаем его отрицательными отступами
   logoRow: { display: 'flex', flexDirection: 'column', alignItems: 'center' },

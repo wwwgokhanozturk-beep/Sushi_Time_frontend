@@ -108,7 +108,7 @@ export default function CartPage() {
 }
 
 const styles = {
-  page: { flex: 1, paddingBottom: 80 },
+  page: { flex: 1, paddingBottom: 'var(--page-bottom-space)' },
   container: { maxWidth: 1100, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 24 },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   title: { fontSize: 28, fontWeight: 900, color: 'var(--text-primary)' },
@@ -155,7 +155,7 @@ const styles = {
   },
   emptyPage: {
     flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-    justifyContent: 'center', gap: 12, padding: 40, paddingBottom: 80,
+    justifyContent: 'center', gap: 12, padding: 40, paddingBottom: 'var(--page-bottom-space)',
   },
   emptyTitle: { fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' },
   emptySubtitle: { fontSize: 14, color: 'var(--text-secondary)', textAlign: 'center' },

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import httpClient from '../api/httpClient';
 import { computeOpenState } from '../utils/businessHours';
+import { fallbackDistricts } from '../utils/districts';
 import { MAPBOX_TOKEN } from '../theme';
 
 // Глобальные настройки сайта (контактный номер и т.п.)
@@ -58,13 +59,24 @@ export const useSettingsStore = create((set, get) => ({
   districts: [],            // [{ name, minOrder }]
   districtsLoaded: false,
 
+  // Never leave the list empty: the checkout requires a district, so an empty
+  // picker blocks every order. If the endpoint is unreachable (or answers with
+  // something unexpected — an SPA rewrite serving index.html, say), fall back
+  // to the static names. Minimums are still enforced server-side on submit.
   loadDistrictMinimums: async () => {
     if (get().districtsLoaded) return;
     try {
       const res = await httpClient.get('/settings/district-minimums');
-      set({ districts: res.data?.data?.districts || [], districtsLoaded: true });
-    } catch {
-      set({ districtsLoaded: true });
+      const list = res.data?.data?.districts;
+      if (Array.isArray(list) && list.length) {
+        set({ districts: list, districtsLoaded: true });
+        return;
+      }
+      console.warn('[settings] district list came back empty — using built-in names');
+      set({ districts: fallbackDistricts(), districtsLoaded: true });
+    } catch (err) {
+      console.warn(`[settings] district list unavailable (${err.message}) — using built-in names`);
+      set({ districts: fallbackDistricts(), districtsLoaded: true });
     }
   },
 

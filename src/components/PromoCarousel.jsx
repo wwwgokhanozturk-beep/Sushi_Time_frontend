@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
-import { BADGE_COLORS, pick } from '../utils/promo';
+import { BADGE_COLORS, pick, slideDurationMs } from '../utils/promo';
 import PromoMedia from './PromoMedia';
 
+// Default when a promotion has no duration of its own.
 const STORY_DURATION = 5000;
 
 function fmtDate(str) {
@@ -34,16 +35,18 @@ function StoryViewer({ promotions, startIndex, lang, onClose }) {
     setIdx((p) => (p > 0 ? p - 1 : p));
   }, []);
 
-  // Auto-advance animation for the current story
+  // Auto-advance animation for the current story. The progress bar is driven by
+  // this story's own duration, so it tracks how long the slide actually stays.
+  const storyDuration = slideDurationMs(promotions[idx], STORY_DURATION);
   useEffect(() => {
     setProgress(0);
     startRef.current = performance.now();
     const tick = (now) => {
       if (pausedRef.current) {
-        startRef.current = now - progress * STORY_DURATION;
+        startRef.current = now - progress * storyDuration;
       } else {
         const elapsed = now - startRef.current;
-        const ratio = Math.min(elapsed / STORY_DURATION, 1);
+        const ratio = Math.min(elapsed / storyDuration, 1);
         setProgress(ratio);
         if (ratio >= 1) {
           goNext();
@@ -55,7 +58,7 @@ function StoryViewer({ promotions, startIndex, lang, onClose }) {
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx]);
+  }, [idx, storyDuration]);
 
   // Keyboard navigation
   useEffect(() => {

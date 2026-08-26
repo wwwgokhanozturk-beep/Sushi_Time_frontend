@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
-import { BADGE_COLORS, pick } from '../utils/promo';
+import { BADGE_COLORS, pick, slideDurationMs } from '../utils/promo';
 import PromoMedia from './PromoMedia';
 
+// Default when a promotion has no duration of its own.
 const SLIDE_DURATION = 6000;
 
 // Shown when there are no active promotions yet, so the carousel is never empty.
@@ -79,14 +80,15 @@ export default function BannerCarousel() {
     touchStartX.current = null;
   };
 
-  // Auto-advance
+  // Auto-advance — each slide holds for its own configured duration.
+  const currentDuration = slideDurationMs(slides[idx], SLIDE_DURATION);
   useEffect(() => {
     if (count <= 1 || paused) return;
     timerRef.current = setTimeout(() => {
       setIdx((p) => (p + 1) % count);
-    }, SLIDE_DURATION);
+    }, currentDuration);
     return () => clearTimeout(timerRef.current);
-  }, [idx, count, paused]);
+  }, [idx, count, paused, currentDuration]);
 
   if (!count) return null;
 

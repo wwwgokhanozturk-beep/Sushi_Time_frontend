@@ -16,12 +16,19 @@ export const useMenuStore = create((set, get) => ({
     try {
       const params = { limit: 1000, ...(category ? { category } : {}) };
       const needsMeta = get().categories.length <= 1;
+      // Only the dish list is essential. The category metadata — custom order,
+      // photos, renamed labels — is presentation polish, and the page falls
+      // back to grouping items by their own category without it. These used to
+      // share a Promise.all with the menu itself, so a single failing settings
+      // endpoint rejected everything and the page showed "no items found"
+      // while /menu had answered with the full catalogue.
+      const optional = (make) => (needsMeta ? make().catch(() => null) : Promise.resolve(null));
       const [itemsRes, catsRes, orderRes, imagesRes, namesRes] = await Promise.all([
         httpClient.get('/menu', { params }),
-        needsMeta ? httpClient.get('/menu/categories') : Promise.resolve(null),
-        needsMeta ? httpClient.get('/settings/category-order') : Promise.resolve(null),
-        needsMeta ? httpClient.get('/settings/category-images') : Promise.resolve(null),
-        needsMeta ? httpClient.get('/settings/category-names') : Promise.resolve(null),
+        optional(() => httpClient.get('/menu/categories')),
+        optional(() => httpClient.get('/settings/category-order')),
+        optional(() => httpClient.get('/settings/category-images')),
+        optional(() => httpClient.get('/settings/category-names')),
       ]);
       const items = itemsRes.data?.data?.items || [];
       const cats = catsRes?.data?.data?.categories;

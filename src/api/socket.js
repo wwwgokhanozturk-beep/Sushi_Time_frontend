@@ -1,20 +1,7 @@
 import { io } from 'socket.io-client';
+import { resolveSocketOrigin } from './apiBase';
 
-const resolveSocketUrl = () => {
-  const explicit = import.meta.env.VITE_SOCKET_URL;
-  if (explicit) return explicit;
-  const apiUrl = import.meta.env.VITE_API_URL;
-  if (apiUrl) {
-    try {
-      const u = new URL(apiUrl, window.location.origin);
-      return `${u.protocol}//${u.host}`;
-    } catch {}
-  }
-  // Fall back to same origin — relies on Vite proxy or same-origin deployment
-  return window.location.origin;
-};
-
-const SOCKET_URL = resolveSocketUrl();
+const SOCKET_URL = resolveSocketOrigin();
 
 let socket = null;
 

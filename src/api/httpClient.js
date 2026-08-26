@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { resolveApiBase } from './apiBase';
 
 const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: resolveApiBase(),
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });

@@ -177,7 +177,7 @@ export default function DriverPage() {
               {order.notes && <div style={styles.notes}>💬 {order.notes}</div>}
 
               <div style={styles.orderFooter}>
-                <span style={styles.price}>{order.totalPrice?.toFixed(2)} ₺ · {t(order.paymentMethod === 'card' ? 'card' : 'cash')}</span>
+                <span style={styles.price}>{order.totalPrice?.toFixed(2)} ₺ · {t(['cash', 'card', 'qr'].includes(order.paymentMethod) ? order.paymentMethod : 'cash')}</span>
                 <div style={styles.actions}>
                   <a href={`tel:${order.phone}`} style={styles.actionLink}>📞</a>
                   <a

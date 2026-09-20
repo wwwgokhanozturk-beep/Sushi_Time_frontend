@@ -11,6 +11,10 @@ import useIsMobile from '../hooks/useIsMobile';
 import MapboxMap from '../components/MapboxMap';
 import { getUpcomingOpenDays, getAvailableTimeSlots } from '../utils/businessHours';
 
+// 'cash' | 'card' | 'qr' — all paid at delivery; the choice only tells the
+// restaurant what the courier should bring along.
+const PAY_ICONS = { cash: '💵', card: '💳', qr: '📱' };
+
 export default function CheckoutPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -224,13 +228,13 @@ export default function CheckoutPage() {
             {/* Payment */}
             <div style={styles.section}>
               <div style={styles.sectionTitle}>{t('payment_method')}</div>
-              {['cash', 'card'].map((m) => (
+              {['cash', 'card', 'qr'].map((m) => (
                 <button
                   key={m}
                   style={{ ...styles.payOption, ...(paymentMethod === m ? styles.payOptionActive : {}) }}
                   onClick={() => setPaymentMethod(m)}
                 >
-                  <span>{m === 'cash' ? '💵' : '💳'}</span>
+                  <span>{PAY_ICONS[m]}</span>
                   <span>{t(m)}</span>
                   {paymentMethod === m && <span style={styles.check}>✓</span>}
                 </button>

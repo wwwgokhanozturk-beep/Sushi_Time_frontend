@@ -129,18 +129,12 @@ export default function HomePage() {
 
   return (
     <div className="page-enter" style={styles.page}>
-      {/* Top section: hero / promo / info / search */}
+      {/* Top section: same order as the mobile app — min-order note / hero / search */}
       <div style={styles.container}>
+        <DeliveryMinBanner />
+
         {/* Hero banner carousel */}
         <BannerCarousel />
-
-        <div style={styles.infoBar}>
-          <div style={styles.infoItem}>🚚 <span>{t('free_delivery')}</span></div>
-          <div style={styles.infoDivider} />
-          <div style={styles.infoItem}>⏱ <span>25–35 min</span></div>
-          <div style={styles.infoDivider} />
-          <div style={styles.infoItem}>⭐ <span>4.9</span></div>
-        </div>
 
         <div style={styles.searchWrap}>
           <span style={styles.searchIcon}>🔍</span>
@@ -154,8 +148,6 @@ export default function HomePage() {
             <button style={styles.clearSearch} onClick={() => setSearch('')}>✕</button>
           )}
         </div>
-
-        <DeliveryMinBanner />
       </div>
 
       {/* Sticky category bar (becomes sticky once the hero scrolls past) */}
@@ -228,18 +220,6 @@ const styles = {
   heroTitle: { fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: -0.5 },
   heroSub: { fontSize: 14, color: 'rgba(255,255,255,0.85)', fontWeight: 500 },
   heroEmoji: { fontSize: 64 },
-  infoBar: {
-    background: '#fff',
-    borderRadius: 'var(--radius-lg)',
-    padding: '14px 20px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    boxShadow: 'var(--shadow-sm)',
-  },
-  infoItem: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' },
-  infoDivider: { width: 1, height: 16, background: 'var(--divider)' },
   searchWrap: {
     background: '#fff',
     borderRadius: 'var(--radius-full)',

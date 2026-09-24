@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
 import { BADGE_COLORS, pick, slideDurationMs } from '../utils/promo';
 import PromoMedia from './PromoMedia';
+import useIsMobile from '../hooks/useIsMobile';
 
 // Default when a promotion has no duration of its own.
 const SLIDE_DURATION = 6000;
@@ -45,6 +46,7 @@ const FALLBACK_SLIDES = [
 export default function BannerCarousel() {
   const { i18n } = useTranslation();
   const lang = (i18n.language || 'en').slice(0, 2);
+  const isMobile = useIsMobile();
   const [promos, setPromos] = useState([]);
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -107,7 +109,7 @@ export default function BannerCarousel() {
             const desc = pick(promo, 'description', lang);
             const badgeColor = promo.badge ? BADGE_COLORS[promo.badge] : null;
             return (
-              <div key={promo._id} style={styles.slide}>
+              <div key={promo._id} style={{ ...styles.slide, ...(isMobile ? styles.slideMobile : {}) }}>
                 {promo.imageUrl ? (
                   <>
                     {/* Размытый фон того же фото — заполняет широкий баннер,
@@ -184,11 +186,13 @@ const styles = {
     position: 'relative',
     flex: '0 0 100%',
     width: '100%',
-    aspectRatio: '3 / 1',
+    aspectRatio: '12 / 5',
     minHeight: 200,
     overflow: 'hidden',
     background: 'var(--primary-light, #FDECEA)',
   },
+  // Phones: same frame as the mobile app's hero (height = width * 0.62).
+  slideMobile: { aspectRatio: '50 / 31' },
   img: {
     position: 'relative',
     zIndex: 1,

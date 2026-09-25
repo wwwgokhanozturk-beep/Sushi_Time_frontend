@@ -5,6 +5,34 @@ import { BADGE_COLORS, pick, slideDurationMs } from '../utils/promo';
 import PromoMedia from './PromoMedia';
 import useIsMobile from '../hooks/useIsMobile';
 
+// The admin frames each promo twice, because the phone (50:31) and desktop
+// (12:5) frames crop the same zoom differently: image* is the phone set,
+// desktopImage* the desktop one (older records only have image*).
+const frameOf = (promo, isMobile) => (isMobile
+  ? { scale: promo.imageScale, offsetX: promo.imageOffsetX, offsetY: promo.imageOffsetY }
+  : {
+    scale: promo.desktopImageScale ?? promo.imageScale,
+    offsetX: promo.desktopImageOffsetX ?? promo.imageOffsetX,
+    offsetY: promo.desktopImageOffsetY ?? promo.imageOffsetY,
+  });
+
+// Blurred backdrop for a video slide: one tiny still of the playing clip.
+// Blurring the live <video> instead re-filters every frame of a 4K clip,
+// which stutters on weaker phones; a 64 px canvas is blurred once.
+function FrameBackdrop({ video }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas || !video?.videoWidth) return;
+    canvas.width = 64;
+    canvas.height = Math.max(1, Math.round((64 * video.videoHeight) / video.videoWidth));
+    try {
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    } catch { /* no backdrop — the margins keep the card colour */ }
+  }, [video]);
+  return <canvas ref={ref} style={styles.backdrop} aria-hidden />;
+}
+
 // Default when a promotion has no duration of its own.
 const SLIDE_DURATION = 6000;
 
@@ -52,6 +80,11 @@ export default function BannerCarousel() {
   const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
   const touchStartX = useRef(null);
+  // promo id -> its <video>, once it has a frame worth painting as backdrop
+  const [frames, setFrames] = useState({});
+  const onFrame = useCallback((id, video) => {
+    setFrames((prev) => (prev[id] ? prev : { ...prev, [id]: video }));
+  }, []);
 
   useEffect(() => {
     httpClient
@@ -108,15 +141,22 @@ export default function BannerCarousel() {
             const title = pick(promo, 'title', lang);
             const desc = pick(promo, 'description', lang);
             const badgeColor = promo.badge ? BADGE_COLORS[promo.badge] : null;
+            const hasText = Boolean(promo.badge || title || desc || promo.discountPercent != null);
+            const frame = frameOf(promo, isMobile);
             return (
               <div key={promo._id} style={{ ...styles.slide, ...(isMobile ? styles.slideMobile : {}) }}>
                 {promo.imageUrl ? (
                   <>
-                    {/* Размытый фон того же фото — заполняет широкий баннер,
-                        пока само фото показывается целиком (contain). */}
-                    <div style={{ ...styles.backdrop, backgroundImage: `url("${promo.imageUrl}")` }} />
+                    {/* Размытая копия того же медиа — заполняет края, которые
+                        оставляет contain: у фото — само фото, у видео — один
+                        кадр из ролика (см. FrameBackdrop). */}
+                    {promo.mediaType !== 'video' && (
+                      <div style={{ ...styles.backdrop, backgroundImage: `url("${promo.imageUrl}")` }} />
+                    )}
+                    {frames[promo._id] && <FrameBackdrop video={frames[promo._id]} />}
                     <PromoMedia src={promo.imageUrl} alt={title} style={styles.img}
-                      scale={promo.imageScale} offsetX={promo.imageOffsetX} offsetY={promo.imageOffsetY} />
+                      scale={frame.scale} offsetX={frame.offsetX} offsetY={frame.offsetY}
+                      onFrame={(video) => onFrame(promo._id, video)} />
                   </>
                 ) : (
                   <div
@@ -128,7 +168,9 @@ export default function BannerCarousel() {
                     {promo.emoji || '🍣'}
                   </div>
                 )}
-                <div style={styles.overlay} />
+                {/* Затемнение только под текстом: имиджевый баннер без подписи
+                    с ним выглядит приглушённым. */}
+                {hasText && <div style={styles.overlay} />}
                 <div style={styles.content}>
                   {promo.badge && (
                     <span style={{ ...styles.badge, background: badgeColor }}>
@@ -201,12 +243,15 @@ const styles = {
     objectFit: 'contain',
     display: 'block',
   },
-  // Размытая «подложка» под contain-фото: фото с любыми пропорциями видно
-  // целиком (без обрезки), а пустые поля в широком баннере не выглядят пустыми.
+  // Размытая «подложка» под contain-медиа: фото или видео с любыми пропорциями
+  // видно целиком, а пустые поля в баннере не выглядят пустыми.
   backdrop: {
     position: 'absolute',
     inset: 0,
     zIndex: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     filter: 'blur(24px)',

@@ -6,7 +6,9 @@ import { isVideoUrl } from '../utils/promo';
 // video and render <video> instead. The URL often has no file extension
 // (e.g. UploadThing), so besides the extension check we probe the Content-Type
 // with a HEAD request, and keep an onError fallback as a last resort.
-export default function PromoMedia({ src, alt = '', style, muted = true, scale = 1, offsetX = 0, offsetY = 0 }) {
+// `onFrame(video)` fires once, a second into playback, so the banner can
+// paint a still of the clip as its blurred backdrop.
+export default function PromoMedia({ src, alt = '', style, muted = true, scale = 1, offsetX = 0, offsetY = 0, onFrame }) {
   // 'video' | 'image' | 'unknown'
   const [kind, setKind] = useState(() => (isVideoUrl(src) ? 'video' : 'unknown'));
 
@@ -41,6 +43,7 @@ export default function PromoMedia({ src, alt = '', style, muted = true, scale =
         loop
         playsInline
         preload="metadata"
+        onTimeUpdate={onFrame ? (e) => { if (e.currentTarget.currentTime >= 1) onFrame(e.currentTarget); } : undefined}
       />
     );
   }

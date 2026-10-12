@@ -22,7 +22,8 @@ export const useOrderStore = create((set) => ({
   placeOrder: async (payload) => {
     set({ loading: true, error: null, orderPlaced: null });
     try {
-      const res = await httpClient.post('/orders', payload);
+      // platform: lets staff see in the admin panel that it came from the site.
+      const res = await httpClient.post('/orders', { ...payload, platform: 'web' });
       const order = res.data?.data?.order;
       set({ loading: false, orderPlaced: order });
       if (order?._id) saveId(order._id);

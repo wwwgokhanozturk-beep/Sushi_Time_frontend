@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
 import { useSettingsStore } from '../store/settingsStore';
-import { pickLang } from '../utils/localized';
+import { pickLang, pickLangArray } from '../utils/localized';
+import { NutritionChips, hasNutrition } from './Nutrition';
 
 // Кадрирование фото, заданное в админке (масштаб + смещение в % рамки)
 export function imageFrameStyle(item) {
@@ -89,6 +90,10 @@ export default function SushiCard({ item, layout = 'grid' }) {
 
   const name = pickLang(item, 'name', i18n.language);
   const description = pickLang(item, 'description', i18n.language);
+  // The restaurant writes what a dish is made of into the description; when
+  // there is none, the ingredient list stands in for it.
+  const blurb = description || pickLangArray(item, 'ingredients', i18n.language).join(', ');
+  const nutrition = hasNutrition(item);
   const frame = imageFrameStyle(item);
   const activeIdx = photoIdx % (photos.length || 1);
 
@@ -127,7 +132,10 @@ export default function SushiCard({ item, layout = 'grid' }) {
             <span style={listStyles.price}>{item.price} ₺</span>
             {hasDiscount && <span style={listStyles.compare}>{item.comparePrice} ₺</span>}
           </div>
-          {description && <div style={listStyles.desc}>{description}</div>}
+          <NutritionChips item={item} />
+          {blurb && (
+            <div style={{ ...listStyles.desc, ...(nutrition ? { WebkitLineClamp: 2 } : null) }}>{blurb}</div>
+          )}
         </div>
 
         {/* RIGHT — image + add button */}
@@ -184,15 +192,13 @@ export default function SushiCard({ item, layout = 'grid' }) {
       {/* Info */}
       <div style={styles.info}>
         <div style={styles.name}>{name}</div>
-        {description && (
-          <div style={styles.desc}>{description}</div>
+        <NutritionChips item={item} />
+        {blurb && (
+          <div style={styles.desc}>{blurb}</div>
         )}
         <div style={styles.meta}>
           {item.preparationTime && (
             <span style={styles.metaItem}>⏱ {item.preparationTime} {t('min_label')}</span>
-          )}
-          {item.calories > 0 && (
-            <span style={styles.metaItem}>🔥 {item.calories} {t('cal_label')}</span>
           )}
         </div>
         <div style={styles.footer}>

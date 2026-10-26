@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
 import { useCartStore } from '../store/cartStore';
 import { imageFrameStyle } from '../components/SushiCard';
+import { NutritionPanel } from '../components/Nutrition';
 import useIsMobile from '../hooks/useIsMobile';
 
 export default function ItemDetailPage() {
@@ -76,9 +77,6 @@ export default function ItemDetailPage() {
               {item.preparationTime && (
                 <span style={styles.badge}>⏱ {item.preparationTime} {t('min_label')}</span>
               )}
-              {item.calories > 0 && (
-                <span style={styles.badge}>🔥 {item.calories} {t('cal_label')}</span>
-              )}
               <span style={{ ...styles.badge, background: 'var(--primary-light)', color: 'var(--primary)' }}>
                 {item.category}
               </span>
@@ -93,6 +91,8 @@ export default function ItemDetailPage() {
                 <span style={styles.comparePrice}>{item.comparePrice} ₺</span>
               )}
             </div>
+
+            <NutritionPanel item={item} />
 
             {/* Description */}
             {description && (

@@ -137,7 +137,7 @@ export default function BannerCarousel() {
     >
       <div style={styles.viewport}>
         <div style={{ ...styles.track, transform: `translateX(-${idx * 100}%)` }}>
-          {slides.map((promo) => {
+          {slides.map((promo, i) => {
             const title = pick(promo, 'title', lang);
             const desc = pick(promo, 'description', lang);
             const badgeColor = promo.badge ? BADGE_COLORS[promo.badge] : null;
@@ -148,15 +148,22 @@ export default function BannerCarousel() {
                 {promo.imageUrl ? (
                   <>
                     {/* Размытая копия того же медиа — заполняет края, которые
-                        оставляет contain: у фото — само фото, у видео — один
-                        кадр из ролика (см. FrameBackdrop). */}
-                    {promo.mediaType !== 'video' && (
-                      <div style={{ ...styles.backdrop, backgroundImage: `url("${promo.imageUrl}")` }} />
+                        оставляет contain: у фото — само фото, у видео — его
+                        первый кадр от сервера (thumbUrl), а у старых записей
+                        без него — кадр из играющего ролика (см. FrameBackdrop). */}
+                    {(promo.mediaType !== 'video' || promo.thumbUrl) && (
+                      <div
+                        style={{
+                          ...styles.backdrop,
+                          backgroundImage: `url("${promo.mediaType === 'video' ? promo.thumbUrl : promo.imageUrl}")`,
+                        }}
+                      />
                     )}
-                    {frames[promo._id] && <FrameBackdrop video={frames[promo._id]} />}
+                    {!promo.thumbUrl && frames[promo._id] && <FrameBackdrop video={frames[promo._id]} />}
                     <PromoMedia src={promo.imageUrl} alt={title} style={styles.img}
+                      mediaType={promo.mediaType} poster={promo.thumbUrl} active={i === idx}
                       scale={frame.scale} offsetX={frame.offsetX} offsetY={frame.offsetY}
-                      onFrame={(video) => onFrame(promo._id, video)} />
+                      onFrame={promo.thumbUrl ? undefined : (video) => onFrame(promo._id, video)} />
                   </>
                 ) : (
                   <div

@@ -26,6 +26,8 @@ const categoryPriority = (cat) => {
 const NAVBAR_PX = 64;
 const CHIPBAR_PX = 64;
 const SCROLL_OFFSET = NAVBAR_PX + CHIPBAR_PX + 12;
+// Карточки первого экрана: их фото грузятся сразу и первыми (SushiCard priority).
+const FIRST_SCREEN_CARDS = 4;
 
 export default function MenuPage() {
   const { t, i18n } = useTranslation();
@@ -76,6 +78,12 @@ export default function MenuPage() {
       return categoryPriority(a) - categoryPriority(b);
     });
   }, [items, search, categoryOrder]);
+
+  // Первые карточки списка (в первом разделе их может быть и одна).
+  const firstScreenIds = useMemo(
+    () => new Set(grouped.flatMap(([, list]) => list).slice(0, FIRST_SCREEN_CARDS).map((it) => it._id)),
+    [grouped],
+  );
 
   useEffect(() => {
     if (!activeCat && grouped.length) setActiveCat(grouped[0][0]);
@@ -194,7 +202,12 @@ export default function MenuPage() {
               <h2 style={styles.sectionTitle}>{categoryLabel(cat, categoryNames, i18n.language, t)}</h2>
               <div style={isMobile ? styles.listContainer : styles.grid}>
                 {list.map((item) => (
-                  <SushiCard key={item._id} item={item} layout={isMobile ? 'list' : 'grid'} />
+                  <SushiCard
+                    key={item._id}
+                    item={item}
+                    layout={isMobile ? 'list' : 'grid'}
+                    priority={firstScreenIds.has(item._id)}
+                  />
                 ))}
               </div>
             </section>

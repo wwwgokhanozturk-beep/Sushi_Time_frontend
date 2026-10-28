@@ -17,9 +17,11 @@ export default function ItemDetailPage() {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [photoLoaded, setPhotoLoaded] = useState(false);
 
   useEffect(() => {
     setLoading(true);
+    setPhotoLoaded(false);
     httpClient.get(`/menu/${id}`)
       .then((r) => setItem(r.data?.data?.item || r.data?.data))
       .catch(() => navigate('/menu'))
@@ -59,7 +61,25 @@ export default function ItemDetailPage() {
           {/* Image */}
           <div style={styles.imgWrap}>
             {item.imageUrl ? (
-              <img src={item.imageUrl} alt={name} style={{ ...styles.img, ...imageFrameStyle(item) }} />
+              <>
+                <img
+                  src={item.imageUrl}
+                  alt={name}
+                  fetchPriority="high"
+                  onLoad={() => setPhotoLoaded(true)}
+                  style={{ ...styles.img, ...imageFrameStyle(item) }}
+                />
+                {/* Пока грузится большое фото — лёгкая копия из меню: она
+                    обычно уже в кеше браузера, поэтому видна сразу. */}
+                {item.thumbUrl && !photoLoaded && (
+                  <img
+                    src={item.thumbUrl}
+                    alt=""
+                    aria-hidden
+                    style={{ ...styles.img, ...styles.imgPlaceholder, ...imageFrameStyle(item) }}
+                  />
+                )}
+              </>
             ) : (
               <div style={{ ...styles.img, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 80, background: 'var(--divider)' }}>
                 🍣
@@ -142,6 +162,7 @@ const styles = {
   layoutMobile: { gridTemplateColumns: '1fr', gap: 20 },
   imgWrap: { position: 'relative', borderRadius: 'var(--radius-xl)', overflow: 'hidden', aspectRatio: '1/1' },
   img: { width: '100%', height: '100%', objectFit: 'cover' },
+  imgPlaceholder: { position: 'absolute', inset: 0 },
   unavail: {
     position: 'absolute', inset: 0,
     background: 'rgba(0,0,0,0.5)',

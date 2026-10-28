@@ -15,11 +15,16 @@ export function imageFrameStyle(item) {
   return { transform: `translate(${x}%, ${y}%) scale(${s})`, transformOrigin: 'center' };
 }
 
-// Список фото блюда: images[] (если есть) иначе одиночный imageUrl
+// Список фото блюда: images[] (если есть) иначе одиночный imageUrl. Карточке
+// хватает лёгких копий (thumbs[i] / thumbUrl, ~600 px) — сервер делает их сам;
+// пока копии нет, берём оригинал.
 function getPhotos(item) {
   if (!item) return [];
-  if (Array.isArray(item.images) && item.images.length) return item.images.filter(Boolean);
-  return item.imageUrl ? [item.imageUrl] : [];
+  if (Array.isArray(item.images) && item.images.length) {
+    return item.images.map((src, i) => item.thumbs?.[i] || src).filter(Boolean);
+  }
+  const main = item.thumbUrl || item.imageUrl;
+  return main ? [main] : [];
 }
 
 // Точки-индикаторы фото
@@ -37,14 +42,18 @@ function Dots({ count, active }) {
   );
 }
 
-// Стек фото с плавным кросс-фейдом (активное — opacity 1)
-function PhotoStack({ photos, activeIdx, fit, pad, frame }) {
+// Стек фото с плавным кросс-фейдом (активное — opacity 1).
+// `priority` — карточка с первого экрана: её фото грузится сразу и раньше
+// остальных, а не ждёт, пока сработает ленивая загрузка.
+function PhotoStack({ photos, activeIdx, fit, pad, frame, priority }) {
   return photos.map((src, i) => (
     <img
       key={i}
       src={src}
       alt=""
-      loading="lazy"
+      loading={priority && i === 0 ? 'eager' : 'lazy'}
+      fetchPriority={priority && i === 0 ? 'high' : 'auto'}
+      decoding="async"
       style={{
         position: 'absolute',
         inset: 0,
@@ -60,7 +69,7 @@ function PhotoStack({ photos, activeIdx, fit, pad, frame }) {
   ));
 }
 
-export default function SushiCard({ item, layout = 'grid' }) {
+export default function SushiCard({ item, layout = 'grid', priority = false }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const addToCart = useCartStore((s) => s.addToCart);
@@ -142,7 +151,7 @@ export default function SushiCard({ item, layout = 'grid' }) {
         <div style={listStyles.imgWrap}>
           <div style={listStyles.imgClip} {...swipe}>
             {photos.length ? (
-              <PhotoStack photos={photos} activeIdx={activeIdx} fit="cover" frame={frame} />
+              <PhotoStack photos={photos} activeIdx={activeIdx} fit="cover" frame={frame} priority={priority} />
             ) : (
               <div style={{ ...listStyles.img, ...listStyles.imgPlaceholder }}>🍣</div>
             )}
@@ -168,7 +177,7 @@ export default function SushiCard({ item, layout = 'grid' }) {
       {/* Image */}
       <div className="sushi-card__img-wrap" {...swipe}>
         {photos.length ? (
-          <PhotoStack photos={photos} activeIdx={activeIdx} fit="contain" pad={10} frame={frame} />
+          <PhotoStack photos={photos} activeIdx={activeIdx} fit="contain" pad={10} frame={frame} priority={priority} />
         ) : (
           <div
             className="sushi-card__img"

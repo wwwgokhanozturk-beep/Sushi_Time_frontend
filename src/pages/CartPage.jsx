@@ -42,7 +42,7 @@ export default function CartPage() {
               <div key={menuItem._id} style={{ ...styles.item, ...(isMobile ? styles.itemMobile : {}) }}>
                 <div style={styles.itemImg}>
                   {menuItem.imageUrl
-                    ? <img src={menuItem.imageUrl} alt={menuItem.name} style={styles.img} />
+                    ? <img src={menuItem.thumbUrl || menuItem.imageUrl} alt={menuItem.name} style={styles.img} />
                     : <div style={{ ...styles.img, background: 'var(--divider)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🍣</div>
                   }
                 </div>

@@ -22,7 +22,16 @@ export default function CategoryChip({ cat, label, image, isActive, onClick, chi
       <span style={{ ...st.ring, ...(isActive ? st.ringActive : {}) }}>
         <span style={st.circle}>
           {hasPhoto ? (
-            <img src={image.imageUrl} alt="" draggable={false} style={imgStyle} />
+            // Кружок ~70 px — хватает лёгкой копии; уступает очередь фото меню.
+            <img
+              src={image.thumbUrl || image.imageUrl}
+              alt=""
+              draggable={false}
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
+              style={imgStyle}
+            />
           ) : (
             <span style={st.emoji}>{categoryEmoji(cat)}</span>
           )}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
 import { useSettingsStore } from '../store/settingsStore';
+import { openDishInfo } from '../store/dishInfoStore';
 import { pickLang, pickLangArray } from '../utils/localized';
 import { NutritionChips, hasNutrition } from './Nutrition';
 
@@ -67,6 +68,29 @@ function PhotoStack({ photos, activeIdx, fit, pad, frame, priority }) {
       }}
     />
   ));
+}
+
+// «i» поверх фото (сверху-справа): окно с весом, составом и БЖУ блюда. Клик
+// не доходит до карточки — та открыла бы страницу блюда.
+function InfoButton({ item, label, large }) {
+  return (
+    <button
+      type="button"
+      className={'sushi-card__info' + (large ? ' sushi-card__info--large' : '')}
+      onClick={(e) => {
+        e.stopPropagation();
+        openDishInfo(item, e.currentTarget);
+      }}
+      aria-label={label}
+    >
+      <span className="sushi-card__info-dot">
+        <svg viewBox="0 0 14 14" aria-hidden="true">
+          <circle cx="7" cy="1.9" r="1.65" fill="currentColor" />
+          <rect x="5.7" y="4.6" width="2.6" height="9" rx="1.3" fill="currentColor" />
+        </svg>
+      </span>
+    </button>
+  );
 }
 
 export default function SushiCard({ item, layout = 'grid', priority = false }) {
@@ -167,6 +191,7 @@ export default function SushiCard({ item, layout = 'grid', priority = false }) {
           >
             +
           </button>
+          <InfoButton item={item} label={t('about_dish')} />
         </div>
       </div>
     );
@@ -196,6 +221,7 @@ export default function SushiCard({ item, layout = 'grid', priority = false }) {
           <div style={styles.unavailableOverlay}>{t('unavailable')}</div>
         )}
         {photos.length > 1 && <Dots count={photos.length} active={activeIdx} />}
+        <InfoButton item={item} label={t('about_dish')} large />
       </div>
 
       {/* Info */}

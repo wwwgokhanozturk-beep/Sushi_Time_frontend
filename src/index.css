@@ -244,6 +244,54 @@ img {
   background: var(--divider);
 }
 
+/* «i» in the photo's corner — opens the dish info window. The button is a
+   44px tap target; only the small white circle in it is visible. */
+.sushi-card__info {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 4;
+  width: 44px;
+  height: 44px;
+  padding: 6px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+.sushi-card__info-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--text-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.sushi-card__info-dot svg { display: block; width: 14px; height: 14px; }
+.sushi-card__info--large { width: 52px; height: 52px; padding: 10px; }
+.sushi-card__info--large .sushi-card__info-dot { width: 30px; height: 30px; }
+.sushi-card__info--large .sushi-card__info-dot svg { width: 16px; height: 16px; }
+.sushi-card__info:hover .sushi-card__info-dot { transform: scale(1.08); background: #fff; }
+.sushi-card__info:active .sushi-card__info-dot { transform: scale(0.94); }
+.sushi-card__info:focus-visible { outline: none; }
+.sushi-card__info:focus-visible .sushi-card__info-dot { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Dish info window: colours sit in inline styles, so hover only shades them. */
+.dish-info__close,
+.dish-info__more,
+.dish-info__add { transition: filter 0.15s ease, transform 0.15s ease; }
+.dish-info__close:hover,
+.dish-info__more:hover { filter: brightness(0.96); }
+.dish-info__add:hover { filter: brightness(0.92); }
+.dish-info__add:active { transform: scale(0.98); }
+.dish-info__close:focus-visible,
+.dish-info__more:focus-visible,
+.dish-info__add:focus-visible,
+.nutrition-segment:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
 /* ---------------------------------------------------------------------------
    Responsive polish — tuned so the layout feels premium on every phone size.
    --------------------------------------------------------------------------- */

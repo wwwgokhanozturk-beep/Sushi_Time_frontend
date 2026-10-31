@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useSettingsStore } from './store/settingsStore';
 import ClosedNotice from './components/ClosedNotice';
+import DishInfoSheet from './components/DishInfoSheet';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
 import HomePage from './pages/HomePage';
@@ -56,6 +57,8 @@ export default function App() {
         <CartBar />
         <ChatWidget />
         <ClosedNotice />
+        {/* Окно «о блюде» — его открывают кнопки «i» на карточках меню */}
+        <DishInfoSheet />
         {/* Bottom nav only on mobile */}
         <MobileOnly>
           <BottomNav />

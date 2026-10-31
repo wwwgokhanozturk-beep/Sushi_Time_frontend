@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import httpClient from '../api/httpClient';
 import { useCartStore } from '../store/cartStore';
 import { imageFrameStyle } from '../components/SushiCard';
-import { NutritionPanel } from '../components/Nutrition';
+import { NutritionFacts, hasNutritionFacts, servingLabel } from '../components/Nutrition';
 import useIsMobile from '../hooks/useIsMobile';
 
 export default function ItemDetailPage() {
@@ -48,6 +48,8 @@ export default function ItemDetailPage() {
   );
 
   if (!item) return null;
+
+  const serving = servingLabel(item, t, i18n.language);
 
   return (
     <div className="page-enter" style={styles.page}>
@@ -102,7 +104,10 @@ export default function ItemDetailPage() {
               </span>
             </div>
 
-            <h1 style={styles.name}>{name}</h1>
+            <div>
+              <h1 style={styles.name}>{name}</h1>
+              {serving && <div style={styles.serving}>{serving}</div>}
+            </div>
 
             {/* Price */}
             <div style={styles.priceRow}>
@@ -112,12 +117,17 @@ export default function ItemDetailPage() {
               )}
             </div>
 
-            <NutritionPanel item={item} />
+            {hasNutritionFacts(item) && (
+              <div>
+                <div style={styles.sectionLabel} lang={lang}>{t('nutrition_title')}</div>
+                <NutritionFacts item={item} />
+              </div>
+            )}
 
             {/* Description */}
             {description && (
               <div>
-                <div style={styles.sectionLabel}>{t('description')}</div>
+                <div style={styles.sectionLabel} lang={lang}>{t('description')}</div>
                 <div style={styles.bodyText}>{description}</div>
               </div>
             )}
@@ -125,7 +135,7 @@ export default function ItemDetailPage() {
             {/* Ingredients */}
             {ingredients.length > 0 && (
               <div>
-                <div style={styles.sectionLabel}>{t('ingredients')}</div>
+                <div style={styles.sectionLabel} lang={lang}>{t('ingredients')}</div>
                 <div style={styles.ingList}>
                   {ingredients.map((ing, i) => (
                     <span key={i} style={styles.ingTag}>{ing}</span>
@@ -173,9 +183,12 @@ const styles = {
   badges: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   badge: { padding: '4px 12px', borderRadius: 999, background: 'var(--background)', color: 'var(--text-secondary)', fontSize: 12, fontWeight: 600 },
   name: { fontSize: 28, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: -0.5, lineHeight: 1.2 },
+  serving: { fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginTop: 6 },
   priceRow: { display: 'flex', alignItems: 'center', gap: 10 },
   price: { fontSize: 28, fontWeight: 900, color: 'var(--primary)' },
   comparePrice: { fontSize: 16, color: 'var(--text-light)', textDecoration: 'line-through' },
+  // Заглавные буквы браузер ставит по языку элемента: у <html> lang="tr", и без
+  // своего lang английское «Description» превращалось в «DESCRİPTİON».
   sectionLabel: { fontSize: 11, fontWeight: 700, color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 },
   bodyText: { fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 },
   ingList: { display: 'flex', flexWrap: 'wrap', gap: 6 },

@@ -5,7 +5,6 @@ import { useCartStore } from '../store/cartStore';
 import { useSettingsStore } from '../store/settingsStore';
 import { openDishInfo } from '../store/dishInfoStore';
 import { pickLang, pickLangArray } from '../utils/localized';
-import { NutritionChips, hasNutrition } from './Nutrition';
 
 // Кадрирование фото, заданное в админке (масштаб + смещение в % рамки)
 export function imageFrameStyle(item) {
@@ -126,7 +125,6 @@ export default function SushiCard({ item, layout = 'grid', priority = false }) {
   // The restaurant writes what a dish is made of into the description; when
   // there is none, the ingredient list stands in for it.
   const blurb = description || pickLangArray(item, 'ingredients', i18n.language).join(', ');
-  const nutrition = hasNutrition(item);
   const frame = imageFrameStyle(item);
   const activeIdx = photoIdx % (photos.length || 1);
 
@@ -165,10 +163,7 @@ export default function SushiCard({ item, layout = 'grid', priority = false }) {
             <span style={listStyles.price}>{item.price} ₺</span>
             {hasDiscount && <span style={listStyles.compare}>{item.comparePrice} ₺</span>}
           </div>
-          <NutritionChips item={item} />
-          {blurb && (
-            <div style={{ ...listStyles.desc, ...(nutrition ? { WebkitLineClamp: 2 } : null) }}>{blurb}</div>
-          )}
+          {blurb && <div style={listStyles.desc}>{blurb}</div>}
         </div>
 
         {/* RIGHT — image + add button */}
@@ -227,7 +222,6 @@ export default function SushiCard({ item, layout = 'grid', priority = false }) {
       {/* Info */}
       <div style={styles.info}>
         <div style={styles.name}>{name}</div>
-        <NutritionChips item={item} />
         {blurb && (
           <div style={styles.desc}>{blurb}</div>
         )}

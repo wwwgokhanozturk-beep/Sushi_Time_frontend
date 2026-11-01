@@ -1,13 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-// Calories and protein per serving — the restaurant types them into the admin
-// panel. 0 means "not filled in", and such a value is not shown at all.
-export const hasNutrition = (item) => item?.calories > 0 || item?.protein > 0;
-
-// Anything to show in the nutrition block: fat and carbs join calories and
-// protein (also per serving, 0 = not filled in).
-export const hasNutritionFacts = (item) => hasNutrition(item) || item?.fat > 0 || item?.carbs > 0;
+// Calories, protein, fat and carbs per serving — the restaurant types them into
+// the admin panel. 0 means "not filled in", and such a value is not shown at
+// all; the nutrition block needs at least one of them.
+export const hasNutritionFacts = (item) =>
+  item?.calories > 0 || item?.protein > 0 || item?.fat > 0 || item?.carbs > 0;
 
 // 12.46 → «12,5» in ru/tr, «12.5» in en; 18 → «18»
 const grams = (v, lang) => Number(v).toLocaleString(lang, { maximumFractionDigits: 1 });
@@ -22,31 +20,6 @@ export function servingLabel(item, t, lang) {
     item?.weight > 0 && `${grams(item.weight, lang)} ${t('gram_label')}`,
     item?.pieces > 0 && t('pieces_count', { pieces: item.pieces }),
   ].filter(Boolean).join(' · ');
-}
-
-const TONES = {
-  calories: { bg: '#FFF1E8', fg: '#C2410C' },
-  protein:  { bg: '#E7F6EE', fg: '#047857' },
-};
-
-// Compact chips for the menu cards: «🔥 320 kcal  💪 18 g protein».
-export function NutritionChips({ item }) {
-  const { t, i18n } = useTranslation();
-  if (!hasNutrition(item)) return null;
-  return (
-    <div style={styles.chips}>
-      {item.calories > 0 && (
-        <span style={{ ...styles.chip, background: TONES.calories.bg, color: TONES.calories.fg }}>
-          🔥 {item.calories} {t('cal_label')}
-        </span>
-      )}
-      {item.protein > 0 && (
-        <span style={{ ...styles.chip, background: TONES.protein.bg, color: TONES.protein.fg }}>
-          💪 {grams(item.protein, i18n.language)} {t('protein_short')}
-        </span>
-      )}
-    </div>
-  );
 }
 
 // Each value's colour: the dot by its label and the stripe under its column.
@@ -103,10 +76,6 @@ export function NutritionFacts({ item, style, children }) {
 }
 
 const styles = {
-  chips: { display: 'flex', flexWrap: 'wrap', gap: 6 },
-  // Sized so both chips fit one line in a phone-width menu row (~190px).
-  chip: { padding: '2px 7px', borderRadius: 999, fontSize: 11.5, fontWeight: 700, lineHeight: '17px', whiteSpace: 'nowrap' },
-
   factsCard: { background: '#F4F4F6', borderRadius: 'var(--radius-lg)', padding: 14 },
   // No capitals: CSS uppercase would follow the page's lang="tr" and print
   // English text with a dotted İ.

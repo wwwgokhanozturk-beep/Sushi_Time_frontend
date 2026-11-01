@@ -12,6 +12,8 @@
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
+  --info: #3B82F6;
+  --info-dark: #2563EB;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -245,7 +247,7 @@ img {
 }
 
 /* «i» in the photo's corner — opens the dish info window. The button is a
-   44px tap target; only the small white circle in it is visible. */
+   44px tap target; only the small blue circle in it is visible. */
 .sushi-card__info {
   position: absolute;
   top: 0;
@@ -262,8 +264,8 @@ img {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--text-primary);
+  background: var(--info);
+  color: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
   display: flex;
   align-items: center;
@@ -274,7 +276,7 @@ img {
 .sushi-card__info--large { width: 52px; height: 52px; padding: 10px; }
 .sushi-card__info--large .sushi-card__info-dot { width: 30px; height: 30px; }
 .sushi-card__info--large .sushi-card__info-dot svg { width: 16px; height: 16px; }
-.sushi-card__info:hover .sushi-card__info-dot { transform: scale(1.08); background: #fff; }
+.sushi-card__info:hover .sushi-card__info-dot { transform: scale(1.08); background: var(--info-dark); }
 .sushi-card__info:active .sushi-card__info-dot { transform: scale(0.94); }
 .sushi-card__info:focus-visible { outline: none; }
 .sushi-card__info:focus-visible .sushi-card__info-dot { outline: 2px solid var(--primary); outline-offset: 2px; }

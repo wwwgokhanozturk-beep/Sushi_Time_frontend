@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Calories and protein per serving — the restaurant types them into the admin
@@ -55,73 +55,41 @@ const MACRO_COLORS = { protein: '#10B981', fat: '#F59E0B', carbs: '#3B82F6' };
 // kcal per gram: protein and carbs 4, fat 9.
 const KCAL_PER_GRAM = { protein: 4, fat: 9, carbs: 4 };
 
-// The chosen tab is shared by all dishes until the page reloads: someone
-// comparing dishes "per 100 g" shouldn't have to switch it for each one.
-let lastBasis = 'serving';
-
-// Nutrition facts with "per 100 g / per serving" tabs: protein, fat, carbs,
-// calories, and a bar showing how the calories split between protein, fat and
-// carbs. The restaurant enters values per serving; per 100 g they are scaled
-// by the serving's weight, and without a weight there are no tabs.
+// Nutrition facts per serving, as the restaurant enters them: protein, fat,
+// carbs, calories, and a bar showing how the calories split between protein,
+// fat and carbs.
 // children — buttons at the bottom of the card ("More about this dish" in the
 // dish window).
 export function NutritionFacts({ item, style, children }) {
   const { t, i18n } = useTranslation();
-  const [chosen, setChosen] = useState(lastBasis);
   if (!hasNutritionFacts(item)) return null;
 
   const lang = i18n.language;
-  const canPer100 = item.weight > 0;
-  const basis = canPer100 ? chosen : 'serving';
-  const factor = basis === '100g' ? 100 / item.weight : 1;
-
-  const choose = (next) => {
-    lastBasis = next;
-    setChosen(next);
-  };
-
   const facts = [
     ...MACROS.map((key) => item[key] > 0 && {
       key,
       color: MACRO_COLORS[key],
-      value: amount(item[key] * factor, lang),
+      value: amount(item[key], lang),
       unit: t('gram_label'),
       label: t(key),
     }),
     item.calories > 0 && {
       key: 'calories',
-      value: Math.round(item.calories * factor).toLocaleString(lang),
+      value: Math.round(item.calories).toLocaleString(lang),
       unit: t('cal_label'),
       label: t('calories'),
     },
   ].filter(Boolean);
 
-  // Shares don't depend on the tab. Only when all three are known — otherwise
-  // a single filled-in value would look like "100% of the calories".
+  // Only when all three are known — otherwise a single filled-in value would
+  // look like "100% of the calories".
   const shares = MACROS.every((key) => item[key] > 0)
     ? MACROS.map((key) => ({ key, kcal: item[key] * KCAL_PER_GRAM[key] }))
     : null;
 
   return (
     <div style={{ ...styles.factsCard, ...style }}>
-      {canPer100 ? (
-        <div style={styles.segment} role="group">
-          {[['100g', t('per_100g')], ['serving', t('per_serving')]].map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              className="nutrition-segment"
-              onClick={() => choose(key)}
-              aria-pressed={basis === key}
-              style={{ ...styles.segmentItem, ...(basis === key ? styles.segmentItemOn : null) }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div style={styles.basisCaption}>{t('per_serving')}</div>
-      )}
+      <div style={styles.basisCaption}>{t('per_serving')}</div>
 
       <div style={{ ...styles.factsRow, ...(facts.length < 3 ? styles.factsRowLoose : null) }}>
         {facts.map((fact) => (
@@ -157,22 +125,6 @@ const styles = {
   chip: { padding: '2px 7px', borderRadius: 999, fontSize: 11.5, fontWeight: 700, lineHeight: '17px', whiteSpace: 'nowrap' },
 
   factsCard: { background: '#F4F4F6', borderRadius: 'var(--radius-lg)', padding: 14 },
-  segment: { display: 'flex', background: '#E7E7EC', borderRadius: 'var(--radius-full)', padding: 3 },
-  segmentItem: {
-    flex: 1,
-    minWidth: 0,
-    height: 36,
-    padding: '0 8px',
-    borderRadius: 'var(--radius-full)',
-    fontSize: 13.5,
-    fontWeight: 600,
-    color: 'var(--text-secondary)',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    transition: 'background 0.2s, color 0.2s, box-shadow 0.2s',
-  },
-  segmentItemOn: { background: '#fff', color: 'var(--text-primary)', fontWeight: 700, boxShadow: 'var(--shadow-sm)' },
   // No capitals: CSS uppercase would follow the page's lang="tr" and print
   // English text with a dotted İ.
   basisCaption: { fontSize: 13.5, fontWeight: 700, color: 'var(--text-secondary)', padding: '0 4px' },

@@ -289,8 +289,7 @@ img {
 .dish-info__add:active { transform: scale(0.98); }
 .dish-info__close:focus-visible,
 .dish-info__more:focus-visible,
-.dish-info__add:focus-visible,
-.nutrition-segment:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dish-info__add:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ---------------------------------------------------------------------------
    Responsive polish — tuned so the layout feels premium on every phone size.

@@ -49,15 +49,12 @@ export function NutritionChips({ item }) {
   );
 }
 
-// Protein, fat and carbs colours: the dots by the labels and the bar under the numbers.
+// Each value's colour: the dot by its label and the stripe under its column.
 const MACROS = ['protein', 'fat', 'carbs'];
-const MACRO_COLORS = { protein: '#10B981', fat: '#F59E0B', carbs: '#3B82F6' };
-// kcal per gram: protein and carbs 4, fat 9.
-const KCAL_PER_GRAM = { protein: 4, fat: 9, carbs: 4 };
+const COLORS = { protein: '#10B981', fat: '#F59E0B', carbs: '#3B82F6', calories: '#EF4444' };
 
 // Nutrition facts per serving, as the restaurant enters them: protein, fat,
-// carbs, calories, and a bar showing how the calories split between protein,
-// fat and carbs.
+// carbs and calories, each in its own colour.
 // children — buttons at the bottom of the card ("More about this dish" in the
 // dish window).
 export function NutritionFacts({ item, style, children }) {
@@ -68,7 +65,6 @@ export function NutritionFacts({ item, style, children }) {
   const facts = [
     ...MACROS.map((key) => item[key] > 0 && {
       key,
-      color: MACRO_COLORS[key],
       value: amount(item[key], lang),
       unit: t('gram_label'),
       label: t(key),
@@ -81,17 +77,11 @@ export function NutritionFacts({ item, style, children }) {
     },
   ].filter(Boolean);
 
-  // Only when all three are known — otherwise a single filled-in value would
-  // look like "100% of the calories".
-  const shares = MACROS.every((key) => item[key] > 0)
-    ? MACROS.map((key) => ({ key, kcal: item[key] * KCAL_PER_GRAM[key] }))
-    : null;
-
   return (
     <div style={{ ...styles.factsCard, ...style }}>
       <div style={styles.basisCaption}>{t('per_serving')}</div>
 
-      <div style={{ ...styles.factsRow, ...(facts.length < 3 ? styles.factsRowLoose : null) }}>
+      <div style={styles.factsRow}>
         {facts.map((fact) => (
           <div key={fact.key} style={styles.fact}>
             <div style={styles.factValue}>
@@ -99,20 +89,13 @@ export function NutritionFacts({ item, style, children }) {
               <span style={styles.factUnit}> {fact.unit}</span>
             </div>
             <div style={styles.factLabelRow}>
-              {fact.color && <span style={{ ...styles.factDot, background: fact.color }} />}
+              <span style={{ ...styles.factDot, background: COLORS[fact.key] }} />
               <span style={styles.factLabel}>{fact.label}</span>
             </div>
+            <div style={{ ...styles.factStripe, background: COLORS[fact.key] }} aria-hidden="true" />
           </div>
         ))}
       </div>
-
-      {shares && (
-        <div style={styles.sharesBar} aria-hidden="true">
-          {shares.map((share) => (
-            <span key={share.key} style={{ flex: share.kcal, background: MACRO_COLORS[share.key] }} />
-          ))}
-        </div>
-      )}
 
       {children}
     </div>
@@ -128,12 +111,12 @@ const styles = {
   // No capitals: CSS uppercase would follow the page's lang="tr" and print
   // English text with a dotted İ.
   basisCaption: { fontSize: 13.5, fontWeight: 700, color: 'var(--text-secondary)', padding: '0 4px' },
-  // Four columns across the card; on a 360px phone "Karbonhidrat" and
-  // "1.250 kcal" still fit, and if not, the label ends with an ellipsis.
-  factsRow: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 16, padding: '0 4px' },
-  // One or two values sit side by side instead of drifting to the edges.
-  factsRowLoose: { justifyContent: 'flex-start', gap: 32 },
-  fact: { minWidth: 0 },
+  // Up to four columns across the card: each as wide as its text plus an equal
+  // share of the rest, so the stripes under them fill the width. On a 360px
+  // phone "Karbonhidrat" and "1.250 kcal" still fit, and if not, the label
+  // ends with an ellipsis.
+  factsRow: { display: 'flex', gap: 8, marginTop: 16, padding: '0 4px' },
+  fact: { flex: '1 1 auto', minWidth: 0 },
   factValue: { fontSize: 20, fontWeight: 800, lineHeight: 1.2, color: 'var(--text-primary)', letterSpacing: -0.4, whiteSpace: 'nowrap' },
   factUnit: { fontSize: 13, fontWeight: 700, letterSpacing: 0 },
   factLabelRow: { display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 },
@@ -147,5 +130,5 @@ const styles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  sharesBar: { display: 'flex', gap: 2, height: 6, borderRadius: 3, overflow: 'hidden', margin: '14px 4px 0' },
+  factStripe: { height: 6, borderRadius: 3, marginTop: 14 },
 };

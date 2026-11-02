@@ -12,7 +12,9 @@ export const useMenuStore = create((set, get) => ({
   error: null,
 
   loadMenu: async (category) => {
-    set({ loading: true, error: null });
+    // A refresh keeps the dishes already on screen. Swapping them for skeletons
+    // shrank the page, so coming back from a dish landed at the top of the menu.
+    set({ loading: get().items.length === 0, error: null });
     try {
       const params = { limit: 1000, ...(category ? { category } : {}) };
       const needsMeta = get().categories.length <= 1;

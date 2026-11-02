@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useSettingsStore } from './store/settingsStore';
 import ClosedNotice from './components/ClosedNotice';
 import DishInfoSheet from './components/DishInfoSheet';
+import ScrollMemory from './components/ScrollMemory';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
 import HomePage from './pages/HomePage';
@@ -34,6 +35,8 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      {/* Новая страница — сверху, «Назад» — туда, где страницу оставили */}
+      <ScrollMemory />
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Navbar />
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>

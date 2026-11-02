@@ -7,6 +7,7 @@ import SushiCard from '../components/SushiCard';
 import CategoryChip from '../components/CategoryChip';
 import DeliveryMinBanner from '../components/DeliveryMinBanner';
 import useIsMobile from '../hooks/useIsMobile';
+import useHistoryState from '../hooks/useHistoryState';
 import { categoryLabel } from '../utils/categories';
 
 // Sets → Rolls / Sushi → Snacks → Drinks
@@ -36,7 +37,8 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { items, loading, loadMenu, categoryOrder, categoryImages, categoryNames } = useMenuStore();
   const isMobile = useIsMobile();
-  const [search, setSearch] = useState('');
+  // «Назад» со страницы блюда возвращает и поиск: прокрутка помнится по нему.
+  const [search, setSearch] = useHistoryState('search', '');
   const [activeCat, setActiveCat] = useState(null);
   const gridStyle = { ...styles.grid, ...(isMobile ? styles.gridMobile : {}) };
 

@@ -70,8 +70,9 @@ function PhotoStack({ photos, activeIdx, fit, pad, frame, priority }) {
 }
 
 // «i»: окно с весом, составом и БЖУ блюда. На карточке компьютера — поверх фото
-// (сверху-справа), в строке телефона (`inline`) — сразу после названия. Клик
-// не доходит до карточки — та открыла бы страницу блюда.
+// (сверху-справа), в строке телефона (`inline`) — в конце строки названия, у
+// левого верхнего угла фото. Клик не доходит до карточки — та открыла бы
+// страницу блюда.
 function InfoButton({ item, label, large, inline }) {
   return (
     <button
@@ -311,9 +312,11 @@ const styles = {
 
 // ── List row styles — mirror of the mobile app's list-mode SushiCard ──────────
 const listStyles = {
+  // Текст и фото выровнены по верху, а название занимает всю ширину до «i»:
+  // так «i» в каждой строке стоит на одном месте — у левого верхнего угла фото.
   row: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 16,
     padding: '14px 16px',
     background: '#fff',
@@ -322,7 +325,7 @@ const listStyles = {
   },
   content: { flex: 1, display: 'flex', flexDirection: 'column', gap: 5, paddingRight: 4, minWidth: 0 },
   nameRow: { display: 'flex', alignItems: 'flex-start', gap: 6 },
-  name: { fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.35, letterSpacing: -0.3, minWidth: 0, overflowWrap: 'anywhere' },
+  name: { flex: 1, fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.35, letterSpacing: -0.3, minWidth: 0, overflowWrap: 'anywhere' },
   priceRow: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   price: { fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' },
   compare: { fontSize: 13, fontWeight: 500, color: 'var(--text-light)', textDecoration: 'line-through' },

@@ -69,13 +69,14 @@ function PhotoStack({ photos, activeIdx, fit, pad, frame, priority }) {
   ));
 }
 
-// «i» поверх фото (сверху-справа): окно с весом, составом и БЖУ блюда. Клик
+// «i»: окно с весом, составом и БЖУ блюда. На карточке компьютера — поверх фото
+// (сверху-справа), в строке телефона (`inline`) — сразу после названия. Клик
 // не доходит до карточки — та открыла бы страницу блюда.
-function InfoButton({ item, label, large }) {
+function InfoButton({ item, label, large, inline }) {
   return (
     <button
       type="button"
-      className={'sushi-card__info' + (large ? ' sushi-card__info--large' : '')}
+      className={'sushi-card__info' + (large ? ' sushi-card__info--large' : '') + (inline ? ' sushi-card__info--inline' : '')}
       onClick={(e) => {
         e.stopPropagation();
         openDishInfo(item, e.currentTarget);
@@ -158,7 +159,10 @@ export default function SushiCard({ item, layout = 'grid', priority = false }) {
       <div style={listStyles.row} onClick={() => navigate(`/menu/${item._id}`)}>
         {/* LEFT — text */}
         <div style={listStyles.content}>
-          <div style={listStyles.name}>{name}</div>
+          <div style={listStyles.nameRow}>
+            <div style={listStyles.name}>{name}</div>
+            <InfoButton item={item} label={t('about_dish')} inline />
+          </div>
           <div style={listStyles.priceRow}>
             <span style={listStyles.price}>{item.price} ₺</span>
             {hasDiscount && <span style={listStyles.compare}>{item.comparePrice} ₺</span>}
@@ -186,7 +190,6 @@ export default function SushiCard({ item, layout = 'grid', priority = false }) {
           >
             +
           </button>
-          <InfoButton item={item} label={t('about_dish')} />
         </div>
       </div>
     );
@@ -318,7 +321,8 @@ const listStyles = {
     cursor: 'pointer',
   },
   content: { flex: 1, display: 'flex', flexDirection: 'column', gap: 5, paddingRight: 4, minWidth: 0 },
-  name: { fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.35, letterSpacing: -0.3 },
+  nameRow: { display: 'flex', alignItems: 'flex-start', gap: 6 },
+  name: { fontSize: 16, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.35, letterSpacing: -0.3, minWidth: 0, overflowWrap: 'anywhere' },
   priceRow: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
   price: { fontSize: 16, fontWeight: 800, color: 'var(--text-primary)' },
   compare: { fontSize: 13, fontWeight: 500, color: 'var(--text-light)', textDecoration: 'line-through' },

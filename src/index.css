@@ -276,6 +276,12 @@ img {
 .sushi-card__info--large { width: 52px; height: 52px; padding: 10px; }
 .sushi-card__info--large .sushi-card__info-dot { width: 30px; height: 30px; }
 .sushi-card__info--large .sushi-card__info-dot svg { width: 16px; height: 16px; }
+/* Phone list row: the «i» follows the dish name instead of sitting on the
+   photo. Negative margins keep a 40px tap target around the 22px circle
+   without making the name line taller. */
+.sushi-card__info--inline { position: relative; flex-shrink: 0; width: 40px; height: 40px; padding: 9px; margin: -9px; }
+.sushi-card__info--inline .sushi-card__info-dot { width: 22px; height: 22px; box-shadow: none; }
+.sushi-card__info--inline .sushi-card__info-dot svg { width: 12px; height: 12px; }
 .sushi-card__info:hover .sushi-card__info-dot { transform: scale(1.08); background: var(--info-dark); }
 .sushi-card__info:active .sushi-card__info-dot { transform: scale(0.94); }
 .sushi-card__info:focus-visible { outline: none; }

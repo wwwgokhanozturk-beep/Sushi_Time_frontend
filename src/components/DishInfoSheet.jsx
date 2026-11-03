@@ -8,6 +8,7 @@ import useIsMobile from '../hooks/useIsMobile';
 import { pickLang, pickLangArray } from '../utils/localized';
 import { imageFrameStyle } from './SushiCard';
 import { NutritionFacts, hasNutritionFacts, servingLabel } from './Nutrition';
+import { Allergens, dishAllergens } from './Allergens';
 
 const SHEET_IN = 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)';
 const SHEET_OUT = 'transform 0.22s cubic-bezier(0.4, 0, 1, 1)';
@@ -224,8 +225,9 @@ function SheetContent({ item, isMobile, dragHandlers, onClose, onMore, onAdd }) 
   const photo = item.thumbUrl || item.imageUrl;
   const facts = hasNutritionFacts(item);
   const hasDiscount = item.comparePrice && item.comparePrice > item.price;
-  // Без состава блок идёт сразу под заголовком — без лишнего отступа сверху.
-  const flush = blurb ? null : { marginTop: 4 };
+  const hasAllergens = dishAllergens(item).length > 0;
+  // Без состава и аллергенов блок идёт сразу под заголовком — без лишнего отступа сверху.
+  const flush = blurb || hasAllergens ? null : { marginTop: 4 };
 
   const moreButton = (
     <button
@@ -267,6 +269,8 @@ function SheetContent({ item, isMobile, dragHandlers, onClose, onMore, onAdd }) 
 
       <div style={styles.body}>
         {blurb && <p style={styles.blurb}>{blurb}</p>}
+        {/* Аллергены — сразу за составом: значки, по нажатию — их названия */}
+        {hasAllergens && <Allergens item={item} style={blurb ? styles.allergens : { marginTop: 4 }} />}
         {facts ? (
           <>
             <h3 style={{ ...styles.sectionTitle, ...flush }}>{t('about_dish')}</h3>
@@ -359,6 +363,7 @@ const styles = {
   // Окно по высоте содержимого; длинный состав прокручивается внутри.
   body: { flex: '0 1 auto', minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', padding: '14px 20px 8px' },
   blurb: { fontSize: 15, lineHeight: 1.45, color: 'var(--text-secondary)' },
+  allergens: { marginTop: 14 },
   sectionTitle: { fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', margin: '22px 0 10px' },
   moreBtn: {
     width: '100%',

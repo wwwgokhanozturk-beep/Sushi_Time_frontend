@@ -5,6 +5,7 @@ import httpClient from '../api/httpClient';
 import { useCartStore } from '../store/cartStore';
 import { imageFrameStyle } from '../components/SushiCard';
 import { NutritionFacts, hasNutritionFacts, servingLabel } from '../components/Nutrition';
+import { Allergens, dishAllergens } from '../components/Allergens';
 import useIsMobile from '../hooks/useIsMobile';
 
 export default function ItemDetailPage() {
@@ -121,6 +122,13 @@ export default function ItemDetailPage() {
               <div>
                 <div style={styles.sectionLabel} lang={lang}>{t('nutrition_title')}</div>
                 <NutritionFacts item={item} />
+              </div>
+            )}
+
+            {dishAllergens(item).length > 0 && (
+              <div>
+                <div style={styles.sectionLabel} lang={lang}>{t('allergens_title')}</div>
+                <Allergens item={item} showTitle={false} />
               </div>
             )}
 

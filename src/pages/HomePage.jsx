@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useMenuStore } from '../store/menuStore';
 import BannerCarousel from '../components/BannerCarousel';
 import SushiCard from '../components/SushiCard';
-import CategoryChip from '../components/CategoryChip';
+import StickyCategoryBar, { COMPACT_BAR_PX } from '../components/StickyCategoryBar';
 import DeliveryMinBanner from '../components/DeliveryMinBanner';
 import useIsMobile from '../hooks/useIsMobile';
 import useHistoryState from '../hooks/useHistoryState';
@@ -43,8 +43,6 @@ export default function HomePage() {
   const gridStyle = { ...styles.grid, ...(isMobile ? styles.gridMobile : {}) };
 
   const sectionRefs = useRef({});
-  const chipRefs = useRef({});
-  const chipBarRef = useRef(null);
   const isClickScrollingRef = useRef(false);
   const clickScrollTimeoutRef = useRef(null);
 
@@ -96,7 +94,8 @@ export default function HomePage() {
   useEffect(() => {
     const onScroll = () => {
       if (isClickScrollingRef.current) return;
-      const threshold = NAVBAR_PX + CHIPBAR_PX + 24;
+      // На телефоне шапка уехала, а полоса категорий стала компактной.
+      const threshold = (isMobile ? COMPACT_BAR_PX : NAVBAR_PX + CHIPBAR_PX) + 24;
       let current = null;
       for (const [cat] of grouped) {
         const el = sectionRefs.current[cat];
@@ -110,26 +109,14 @@ export default function HomePage() {
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
-  }, [grouped, activeCat]);
-
-  // Keep active chip visible in the horizontal rail
-  useEffect(() => {
-    const chip = chipRefs.current[activeCat];
-    const bar = chipBarRef.current;
-    if (!chip || !bar) return;
-    const chipRect = chip.getBoundingClientRect();
-    const barRect = bar.getBoundingClientRect();
-    const offset =
-      chipRect.left - barRect.left - barRect.width / 2 + chipRect.width / 2;
-    bar.scrollBy({ left: offset, behavior: 'smooth' });
-  }, [activeCat]);
+  }, [grouped, activeCat, isMobile]);
 
   const scrollToCategory = (cat) => {
     const el = sectionRefs.current[cat];
     if (!el) return;
     setActiveCat(cat);
     isClickScrollingRef.current = true;
-    const top = el.getBoundingClientRect().top + window.scrollY - SCROLL_OFFSET;
+    const top = el.getBoundingClientRect().top + window.scrollY - (isMobile ? COMPACT_BAR_PX + 12 : SCROLL_OFFSET);
     window.scrollTo({ top, behavior: 'smooth' });
     clearTimeout(clickScrollTimeoutRef.current);
     clickScrollTimeoutRef.current = setTimeout(() => {
@@ -162,23 +149,14 @@ export default function HomePage() {
 
       {/* Sticky category bar (becomes sticky once the hero scrolls past) */}
       {!loading && grouped.length > 0 && (
-        <div style={styles.stickyBar}>
-          <div style={styles.stickyInner}>
-            <div ref={chipBarRef} className="no-scrollbar" style={styles.catScroll}>
-              {grouped.map(([cat]) => (
-                <CategoryChip
-                  key={cat}
-                  cat={cat}
-                  label={categoryLabel(cat, categoryNames, i18n.language, t)}
-                  image={categoryImages[cat]}
-                  isActive={activeCat === cat}
-                  onClick={() => scrollToCategory(cat)}
-                  chipRef={(el) => (chipRefs.current[cat] = el)}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+        <StickyCategoryBar
+          categories={grouped.map(([cat]) => cat)}
+          activeCat={activeCat}
+          onPick={scrollToCategory}
+          labelOf={(cat) => categoryLabel(cat, categoryNames, i18n.language, t)}
+          imageOf={(cat) => categoryImages[cat]}
+          isMobile={isMobile}
+        />
       )}
 
       <div style={styles.container}>
@@ -248,14 +226,6 @@ const styles = {
   searchIcon: { fontSize: 16, color: 'var(--text-light)' },
   searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: 15, color: 'var(--text-primary)', background: 'transparent' },
   clearSearch: { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', fontSize: 14, padding: 0 },
-  stickyBar: {
-    position: 'sticky',
-    top: 'var(--navbar-height)',
-    zIndex: 50,
-    background: 'transparent',
-  },
-  stickyInner: { maxWidth: '100%', margin: '0 auto', padding: '4px clamp(16px, 3vw, 40px)' },
-  catScroll: { display: 'flex', gap: 8, overflowX: 'auto', scrollBehavior: 'smooth', alignItems: 'center', padding: '8px 0' },
   section: { display: 'flex', flexDirection: 'column', gap: 14, scrollMarginTop: 140 },
   sectionTitle: { fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: -0.3 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 20 },

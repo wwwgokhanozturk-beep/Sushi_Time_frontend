@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n/index.js";
+import useScrolledPastTop from "../../hooks/useScrolledPastTop";
 
 // Real flag images (flagcdn) — emoji flags render as plain letters ("GB") on
 // Windows/Chrome, so we use proper flag artwork for a consistent premium look.
@@ -28,6 +29,9 @@ export default function Navbar() {
   const location = useLocation();
   const currentLang = i18n.language || "en";
   const isMobile = useIsMobile();
+  // On a phone the bar shows only at the very top of the page: scrolled down,
+  // it slides away and leaves the screen to the menu.
+  const hidden = useScrolledPastTop() && isMobile;
 
   const navLinks = [
     { to: "/", label: t("home") },
@@ -66,7 +70,7 @@ export default function Navbar() {
   );
 
   return (
-    <nav style={styles.nav}>
+    <nav style={{ ...styles.nav, ...(hidden ? styles.navHidden : {}) }} aria-hidden={hidden || undefined}>
       <div style={{ ...styles.inner, ...(isMobile ? styles.innerMobile : {}) }}>
         {/* Logo */}
         <Link to="/" style={styles.logo}>
@@ -113,7 +117,9 @@ const styles = {
     borderBottom: "1px solid var(--divider)",
     boxShadow: "var(--shadow-sm)",
     height: "var(--navbar-height)",
+    transition: "transform 0.25s ease",
   },
+  navHidden: { transform: "translateY(-100%)", boxShadow: "none", pointerEvents: "none" },
   inner: {
     // Match the page containers exactly (maxWidth 100% + same clamp padding)
     // so the navbar's left/right edges line up with the main content.

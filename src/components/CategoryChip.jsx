@@ -6,9 +6,26 @@ import { categoryEmoji } from '../utils/categories';
  * Фото кадрируется scale/offset из админки; без фото — тематический эмодзи
  * на мягком фоне. Активная категория выделяется красным кольцом и подписью.
  *
- * props: cat, label, image {imageUrl,scale,offsetX,offsetY}, isActive, onClick, chipRef
+ * compact — без фото, одно название-«таблетка»: так полоса прилипает к верху
+ * на телефоне.
+ *
+ * props: cat, label, image {imageUrl,scale,offsetX,offsetY}, isActive, onClick, chipRef, compact
  */
-export default function CategoryChip({ cat, label, image, isActive, onClick, chipRef }) {
+export default function CategoryChip({ cat, label, image, isActive, onClick, chipRef, compact }) {
+  if (compact) {
+    return (
+      <button
+        ref={chipRef}
+        onClick={onClick}
+        title={label}
+        aria-pressed={isActive}
+        style={{ ...st.pill, ...(isActive ? st.pillActive : {}) }}
+      >
+        {label}
+      </button>
+    );
+  }
+
   const hasPhoto = !!image?.imageUrl;
   const imgStyle = hasPhoto
     ? {
@@ -102,4 +119,23 @@ const st = {
     transition: 'color 0.2s ease',
   },
   labelActive: { color: 'var(--primary)', fontWeight: 800 },
+  pill: {
+    flexShrink: 0,
+    height: 34,
+    padding: '0 14px',
+    borderRadius: 'var(--radius-full)',
+    // Без сокращения border: у активной меняется только цвет рамки, а смесь
+    // border и borderColor React при перерисовке сбрасывает.
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: 'var(--divider)',
+    background: '#fff',
+    color: 'var(--text-secondary)',
+    fontSize: 13.5,
+    fontWeight: 700,
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
+  },
+  pillActive: { background: 'var(--primary)', borderColor: 'var(--primary)', color: '#fff' },
 };

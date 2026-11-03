@@ -26,8 +26,10 @@ export function servingLabel(item, t, lang) {
 const MACROS = ['protein', 'fat', 'carbs'];
 const COLORS = { protein: '#10B981', fat: '#F59E0B', carbs: '#3B82F6', calories: '#EF4444' };
 
-// Nutrition facts per serving, as the restaurant enters them: protein, fat,
-// carbs and calories, each in its own colour.
+// Nutrition facts per serving, as entered in the admin panel: protein, fat,
+// carbs and calories, each in its own colour. The menu's values are estimates
+// worked out from each dish's recipe and photo (2026-11-03), so the caption
+// calls them approximate.
 // children — buttons at the bottom of the card ("More about this dish" in the
 // dish window).
 export function NutritionFacts({ item, style, children }) {
@@ -52,7 +54,7 @@ export function NutritionFacts({ item, style, children }) {
 
   return (
     <div style={{ ...styles.factsCard, ...style }}>
-      <div style={styles.basisCaption}>{t('per_serving')}</div>
+      <div style={styles.basisCaption}>{t('approx_per_serving')}</div>
 
       <div style={styles.factsRow}>
         {facts.map((fact) => (

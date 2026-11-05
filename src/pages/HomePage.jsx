@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMenuStore } from '../store/menuStore';
-import BannerCarousel from '../components/BannerCarousel';
+import PromoReels from '../components/PromoReels';
 import SushiCard from '../components/SushiCard';
 import StickyCategoryBar, { COMPACT_BAR_PX } from '../components/StickyCategoryBar';
 import DeliveryMinBanner from '../components/DeliveryMinBanner';
@@ -130,8 +130,8 @@ export default function HomePage() {
       <div style={styles.container}>
         <DeliveryMinBanner />
 
-        {/* Hero banner carousel */}
-        <BannerCarousel />
+        {/* Акции — ролики в стиле рилсов: ряд вертикальных карточек */}
+        <PromoReels />
 
         <div style={styles.searchWrap}>
           <span style={styles.searchIcon}>🔍</span>

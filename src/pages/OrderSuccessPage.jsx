@@ -15,7 +15,9 @@ export default function OrderSuccessPage() {
     if (!order) { navigate('/'); return; }
     loadOrderTimer();
     setTimeout(() => setVisible(true), 50);
-    const redirect = setTimeout(() => navigate(`/orders/${order._id}`, { replace: true }), 2500);
+    // Галочка рисуется ~1.5 с — после неё ещё пара секунд, чтобы прочитать
+    // «Ваш заказ принят», и дальше страница отслеживания заказа.
+    const redirect = setTimeout(() => navigate(`/orders/${order._id}`, { replace: true }), 4500);
     return () => clearTimeout(redirect);
   }, []);
 
@@ -26,14 +28,14 @@ export default function OrderSuccessPage() {
   return (
     <div style={styles.page}>
       <div style={{ ...styles.card, opacity: visible ? 1 : 0, transform: visible ? 'scale(1)' : 'scale(0.9)', transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
-        {/* Check icon */}
-        <div style={styles.iconWrap}>
-          <div style={{ ...styles.icon, transform: visible ? 'scale(1)' : 'scale(0)', transition: 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s' }}>
-            ✓
-          </div>
-        </div>
+        {/* Галочка рисуется сама: сначала круг, потом внутри галочка (index.css) */}
+        <svg className="success-check" width="112" height="112" viewBox="0 0 120 120" aria-hidden="true">
+          <circle className="success-check__disc" cx="60" cy="60" r="57" />
+          <circle className="success-check__ring" cx="60" cy="60" r="44" pathLength="100" />
+          <path className="success-check__tick" d="M41 61.5l12.5 12.5L80 47" pathLength="100" />
+        </svg>
 
-        <h1 style={styles.title}>{t('order_confirmed')}</h1>
+        <h1 style={styles.title}>{t('order_accepted')}</h1>
         <div style={styles.orderId}>{t('order_number', { id: shortId })}</div>
         <div style={styles.desc}>{t('order_success_desc')}</div>
 
@@ -62,8 +64,6 @@ export default function OrderSuccessPage() {
 const styles = {
   page: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 'var(--page-bottom-space)', background: 'var(--background)', minHeight: '60vh' },
   card: { background: '#fff', borderRadius: 'var(--radius-xl)', padding: '40px 32px', maxWidth: 440, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, boxShadow: 'var(--shadow-lg)', textAlign: 'center' },
-  iconWrap: { width: 96, height: 96, borderRadius: 999, background: '#E8F5E9', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  icon: { fontSize: 48, color: 'var(--success)', display: 'block', lineHeight: 1 },
   title: { fontSize: 26, fontWeight: 900, color: 'var(--text-primary)' },
   orderId: { fontSize: 15, fontWeight: 700, color: 'var(--primary)', background: 'var(--primary-light)', padding: '6px 16px', borderRadius: 999 },
   desc: { fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 },

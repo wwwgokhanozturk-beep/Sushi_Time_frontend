@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMenuStore } from '../store/menuStore';
 import PromoReels from '../components/PromoReels';
+import RestaurantLocationCard from '../components/RestaurantLocationCard';
 import SushiCard from '../components/SushiCard';
 import StickyCategoryBar, { COMPACT_BAR_PX } from '../components/StickyCategoryBar';
 import DeliveryMinBanner from '../components/DeliveryMinBanner';
@@ -132,6 +133,9 @@ export default function HomePage() {
 
         {/* Акции — ролики в стиле рилсов: ряд вертикальных карточек */}
         <PromoReels />
+
+        {/* Ресторан на карте — одно нажатие открывает приложение карт */}
+        <RestaurantLocationCard />
 
         <div style={styles.searchWrap}>
           <span style={styles.searchIcon}>🔍</span>

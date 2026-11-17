@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useSettingsStore } from './store/settingsStore';
+import { useProfileStore } from './store/profileStore';
+import { pingDeviceActivity } from './utils/deviceActivity';
 import ClosedNotice from './components/ClosedNotice';
 import DishInfoSheet from './components/DishInfoSheet';
 import ScrollMemory from './components/ScrollMemory';
@@ -25,6 +27,7 @@ export default function App() {
   const loadBusinessHours = useSettingsStore((s) => s.loadBusinessHours);
   const loadDistrictMinimums = useSettingsStore((s) => s.loadDistrictMinimums);
   const requestLocation = useSettingsStore((s) => s.requestLocation);
+  const isLoggedIn = useProfileStore((s) => s.isLoggedIn);
 
   useEffect(() => {
     loadBusinessHours();
@@ -32,6 +35,11 @@ export default function App() {
     // Ask for location right away so we can show the delivery minimum early.
     requestLocation();
   }, [loadBusinessHours, loadDistrictMinimums, requestLocation]);
+
+  // Анонимная отметка «сайтом пользуются» для статистики в админке.
+  useEffect(() => {
+    pingDeviceActivity(isLoggedIn);
+  }, [isLoggedIn]);
 
   return (
     <BrowserRouter>

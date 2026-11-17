@@ -22,6 +22,8 @@ export default function RegisterPage() {
     try {
       const res = await httpClient.post('/users/register', {
         name: form.name, email: form.email, phone: form.phone, password: form.password,
+        // Админка показывает, где создан аккаунт: сайт, App Store или Play Market.
+        platform: 'web',
       });
       const { user, token, refreshToken } = res.data?.data || {};
       if (user && token) {
